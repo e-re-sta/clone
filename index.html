@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Clone Game Hub</title>
+<title>Clone2 Game Hub</title>
 <style>
   :root {
     --bg-color-light: #f0f0f0;
@@ -36,7 +36,7 @@
   }
   .games-grid {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
     gap: 1rem;
     margin-bottom: 1rem;
   }
@@ -47,6 +47,7 @@
     color:#fff;
     cursor:pointer;
     transition: background-color 0.2s;
+    font-size: 0.9rem;
   }
   button:hover {
     background-color: var(--button-hover);
@@ -79,7 +80,7 @@
 </style>
 </head>
 <body>
-<header id="reload-header">clone</header>
+<header id="reload-header">clone2</header>
 <button id="dark-toggle">Toggle Darkmode</button>
 <div id="main"></div>
 
@@ -96,10 +97,9 @@
   // Reload header
   document.getElementById('reload-header').addEventListener('click', ()=> location.reload());
 
-  const totalPages = 5;
   const gamesPerPage = 12;
-  const totalGames = 60;
   let currentPage = 1;
+  const totalGames = 12; // für Clone2 Mainpage
 
   function walletAddress() {
     return {
@@ -114,10 +114,7 @@
     const grid = document.createElement('div');
     grid.className = 'games-grid';
 
-    const startIndex = (currentPage-1)*gamesPerPage + 1;
-    const endIndex = Math.min(startIndex + gamesPerPage - 1, totalGames);
-
-    for(let i=startIndex; i<=endIndex; i++){
+    for(let i=1; i<=totalGames; i++){
       const btn = document.createElement('button');
       btn.textContent = `Game ${i}`;
       btn.addEventListener('click', ()=> loadGame(i));
@@ -125,18 +122,9 @@
     }
     main.appendChild(grid);
 
+    // Navigation placeholder (kann erweitert werden)
     const nav = document.createElement('div');
     nav.id = 'nav-buttons';
-    const backBtn = document.createElement('button');
-    backBtn.textContent = 'Back';
-    backBtn.disabled = currentPage===1;
-    backBtn.addEventListener('click', ()=> {currentPage--; renderMain();});
-    const nextBtn = document.createElement('button');
-    nextBtn.textContent = 'Next';
-    nextBtn.disabled = currentPage===totalPages;
-    nextBtn.addEventListener('click', ()=> {currentPage++; renderMain();});
-    nav.appendChild(backBtn);
-    nav.appendChild(nextBtn);
     main.appendChild(nav);
   }
 
@@ -144,20 +132,19 @@
     const main = document.getElementById('main');
     main.innerHTML = '';
 
+    const wallets = walletAddress();
+    let lives = 6;
+    let level = 1;
+    const maxLevel = 10;
+
     const gameDiv = document.createElement('div');
     main.appendChild(gameDiv);
 
-    // Game state
-    let level = 1;
-    let lives = 6;
-    const maxLevel = 10;
-    const wallets = walletAddress();
-
-    function renderGame() {
+    function renderGame(){
       gameDiv.innerHTML = `
-        <h2>Game ${gameNumber} - Level ${level}</h2>
+        <h2>Clone2 - Game ${gameNumber} - Level ${level}</h2>
         <p>Lives: ${lives}</p>
-        <p>Play the game placeholder...</p>
+        <p>Game content placeholder...</p>
         <button id="next-level">Next Level</button>
         <button id="pay-eth">Pay 0.000001 ETH for Level 8</button>
         <button id="pay-sol">Pay 0.50 SOL for 6 Lives</button>
@@ -166,13 +153,13 @@
 
       // Next Level
       document.getElementById('next-level').addEventListener('click', ()=>{
-        if(level === 7) {
+        if(level === 7){
           alert('Level 8 requires ETH payment!');
         } else if(level < maxLevel){
           level++;
           renderGame();
         } else {
-          alert('You reached max level!');
+          alert('Reached max level');
         }
       });
 
