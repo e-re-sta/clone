@@ -1,101 +1,194 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>OrangeWeb - AgentBird</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OrangeWeb</title>
 <style>
-  body { background:#222; color:#fff; font-family:sans-serif; margin:0; padding:0; text-align:center; }
-  h1 { margin:20px 0; }
-  #gameContainer { display:flex; flex-wrap:wrap; justify-content:center; gap:10px; margin-bottom:20px; }
-  .gameButton { padding:15px 25px; font-size:16px; border:none; border-radius:5px; cursor:pointer; background:orange; color:#000; }
-  #agentBirdWrapper { display:none; position:relative; margin:auto; width:800px; height:500px; border:2px solid #333; border-radius:10px; }
-  #agentBirdCanvas { width:100%; height:100%; }
-  #scoreDisplay { position:absolute; top:10px; left:10px; font-size:20px; color:white; }
-  #backBtn { position:absolute; top:10px; right:10px; padding:10px 20px; font-size:16px; border:none; border-radius:5px; background:red; color:white; cursor:pointer; }
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #fff7e6;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+  }
+  header {
+    padding: 10px;
+    background-color: orange;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  header button {
+    padding: 5px 15px;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+    border-radius: 4px;
+  }
+  h1 { margin: 20px 0 10px 0; }
+  p { margin: 0 0 20px 0; }
+  .game-buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    max-width: 800px;
+    margin: 0 auto 40px auto;
+  }
+  .game-buttons button {
+    padding: 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    background-color: orange;
+    color: white;
+    transition: 0.3s;
+  }
+  .game-buttons button:hover { background-color: darkorange; }
+  .game-placeholder {
+    display: none;
+    position: relative;
+    padding: 50px;
+    font-size: 24px;
+    background-color: #ffe0b2;
+    min-height: 300px;
+  }
+  .back-button {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    padding: 10px 15px;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+    border-radius: 4px;
+    background-color: orange;
+    color: white;
+  }
+  .pay-buttons button {
+    margin: 5px;
+    padding: 10px 20px;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 4px;
+    border: none;
+    background-color: #f57c00;
+    color: white;
+  }
 </style>
 </head>
 <body>
-<h1>OrangeWeb</h1>
-<div class="gameButton" onclick="openGame1()">Game 1 - AgentBird (Fly & Shoot)</div>
 
-<div id="agentBirdWrapper">
-    <canvas id="agentBirdCanvas" width="800" height="500"></canvas>
-    <div id="scoreDisplay">Score: 0</div>
-    <button id="backBtn" onclick="backToMain()">Back</button>
+<header>
+  <div>OrangeWeb</div>
+  <button onclick="location.reload()">Reload</button>
+</header>
+
+<h1>Have fun!</h1>
+<p>
+
+OrangeWeb – Your Gaming World, Directly in the Browser
+
+Discover 12 exciting games you can play instantly – no installation required. Pay securely with Ethereum (MetaMask) or Solana (Sollet) and start your adventure right away. At OrangeWeb, you choose which games to experience – anonymous and secure.
+</p>
+<div class="game-buttons">
+  <button onclick="playGame(1)">Game 1</button>
+  <button onclick="playGame(2)">Game 2</button>
+  <button onclick="playGame(3)">Game 3</button>
+  <button onclick="playGame(4)">Game 4</button>
+  <button onclick="playGame(5)">Game 5</button>
+  <button onclick="playGame(6)">Game 6</button>
+  <button onclick="playGame(7)">Game 7</button>
+  <button onclick="playGame(8)">Game 8</button>
+  <button onclick="playGame(9)">Game 9</button>
+  <button onclick="playGame(10)">Game 10</button>
+  <button onclick="playGame(11)">Game 11</button>
+  <button onclick="playGame(12)">Game 12</button>
+</div>
+
+<div id="gameContainer" class="game-placeholder">
+  <div id="gameContent"></div>
+  <div class="pay-buttons">
+    <button onclick="payEth()">Zahle ETH</button>
+    <button onclick="paySol()">Zahle SOL</button>
+  </div>
+  <button class="back-button" onclick="backToMain()">Back</button>
 </div>
 
 <script>
-const wrapper = document.getElementById('agentBirdWrapper');
-const canvas = document.getElementById('agentBirdCanvas');
-const ctx = canvas.getContext('2d');
-const scoreDisplay = document.getElementById('scoreDisplay');
-let player, bullets, enemies, score, shootCooldown, gameActive, gameLoopId;
+  // ==== Wallet-Adressen (einmal setzen) ====
+  const ETH_ADDRESS = "0x1111111111111111111111111111111111111111"; // <- hier ETH-Adresse einfügen
+  const SOL_ADDRESS = "So11111111111111111111111111111111111111111"; // <- hier SOL-Adresse einfügen
+  const ETH_AMOUNT = "0.01"; // ETH zu senden
+  const SOL_AMOUNT = 0.01; // SOL zu senden
 
-// --- Touch/Maus Steuerung ---
-canvas.addEventListener('mousemove', e => { if(player && gameActive) player.y = e.clientY - canvas.getBoundingClientRect().top - player.height/2; });
-canvas.addEventListener('touchmove', e => { if(player && gameActive) { player.y = e.touches[0].clientY - canvas.getBoundingClientRect().top - player.height/2; e.preventDefault(); }});
-canvas.addEventListener('click', ()=>{ if(!gameActive) return; if(shootCooldown<=0){ bullets.push({x:player.x+player.width, y:player.y+player.height/2, width:10, height:4, speed:8}); shootCooldown=20; }});
+  const gameContainer = document.getElementById('gameContainer');
+  const gameContent = document.getElementById('gameContent');
+  const gameButtonsDiv = document.querySelector('.game-buttons');
 
-function openGame1(){
-    wrapper.style.display='block';
-    startAgentBird();
-}
+  function playGame(num) {
+    gameButtonsDiv.style.display = 'none';
+    gameContainer.style.display = 'block';
+    gameContent.textContent = `Spiel ${num} Platzhalter`;
+  }
 
-function backToMain(){
-    wrapper.style.display='none';
-    gameActive=false;
-    cancelAnimationFrame(gameLoopId);
-}
+  function backToMain() {
+    gameContainer.style.display = 'none';
+    gameButtonsDiv.style.display = 'grid';
+  }
 
-// --- Game Start ---
-function startAgentBird(){
-    player = {x:100, y:250, width:40, height:30, color:'orange'};
-    bullets = [];
-    enemies = [];
-    score = 0;
-    shootCooldown = 0;
-    gameActive = true;
-
-    function spawnEnemies(){
-        if(Math.random()<0.02){ enemies.push({x:800, y:Math.random()*450, width:50, height:40, color:'gray', speed:2+Math.random()*2}); }
+  // ==== Ethereum Payment über MetaMask ====
+  async function payEth() {
+    if (typeof window.ethereum === 'undefined') {
+      alert("MetaMask nicht gefunden!");
+      return;
     }
-
-    function update(){
-        if(!gameActive) return;
-        if(player.y<0) player.y=0;
-        if(player.y+player.height>canvas.height-50) player.y=canvas.height-50-player.height;
-
-        // Spawn
-        spawnEnemies();
-
-        // Update bullets
-        bullets.forEach((b,i)=>{
-            b.x += b.speed;
-            if(b.x>canvas.width) bullets.splice(i,1);
-            enemies.forEach((e,j)=>{ if(b.x<b.x+b.width && b.x+b.width>e.x && b.y<e.y+e.height && b.y+b.height>e.y){ bullets.splice(i,1); enemies.splice(j,1); } });
-        });
-
-        // Update enemies
-        enemies.forEach((e,i)=>{ e.x -= e.speed; if(e.x+e.width<0) enemies.splice(i,1); });
-
-        if(shootCooldown>0) shootCooldown--;
-
-        score += 0.1;
+    try {
+      const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+      const tx = await ethereum.request({
+        method: 'eth_sendTransaction',
+        params: [{
+          from: accounts[0],
+          to: ETH_ADDRESS,
+          value: (ETH_AMOUNT * 1e18).toString(16), // ETH in wei
+        }],
+      });
+      alert("ETH Zahlung erfolgreich! Tx: " + tx);
+    } catch (err) {
+      console.error(err);
+      alert("ETH Zahlung fehlgeschlagen!");
     }
+  }
 
-    function draw(){
-        ctx.clearRect(0,0,canvas.width,canvas.height);
-        ctx.fillStyle='#87CEEB'; ctx.fillRect(0,0,canvas.width,canvas.height); // Himmel
-        ctx.fillStyle='#2e8b57'; ctx.fillRect(0,canvas.height-50,canvas.width,50); // Boden
-        ctx.fillStyle=player.color; ctx.fillRect(player.x,player.y,player.width,player.height);
-        bullets.forEach(b=>{ ctx.fillStyle='yellow'; ctx.fillRect(b.x,b.y,b.width,b.height); });
-        enemies.forEach(e=>{ ctx.fillStyle=e.color; ctx.fillRect(e.x,e.y,e.width,e.height); });
-        scoreDisplay.innerText = `Score: ${Math.floor(score)}`;
+  // ==== Solana Payment über Sollet ====
+  async function paySol() {
+    if (!window.sollet) {
+      alert("Sollet Wallet nicht gefunden!");
+      return;
     }
-
-    function loop(){ update(); draw(); if(gameActive) gameLoopId=requestAnimationFrame(loop); }
-    loop();
-}
+    try {
+      const provider = window.sollet;
+      await provider.connect();
+      const transaction = new window.solanaWeb3.Transaction().add(
+        window.solanaWeb3.SystemProgram.transfer({
+          fromPubkey: provider.publicKey,
+          toPubkey: new window.solanaWeb3.PublicKey(SOL_ADDRESS),
+          lamports: SOL_AMOUNT * 1e9, // SOL zu Lamports
+        })
+      );
+      const signature = await provider.sendTransaction(transaction, window.solanaWeb3.Connection);
+      alert("SOL Zahlung erfolgreich! Signature: " + signature);
+    } catch (err) {
+      console.error(err);
+      alert("SOL Zahlung fehlgeschlagen!");
+    }
+  }
 </script>
+
+<script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
+<script src="https://www.sollet.io/embed.js"></script>
+
 </body>
 </html>
