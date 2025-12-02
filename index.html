@@ -31,7 +31,7 @@ p { text-align:center; color:#333; margin-bottom:20px; }
   <div class="game-grid" id="gameGrid">
     <div class="game-card">
       <div class="game-title">Game 1: AgentBird</div>
-      <p>Fly through storms, dodge enemies, and survive!</p>
+      <p>Fly through the sky, avoid enemies, survive!</p>
       <button class="btn" onclick="startGame1()">Play AgentBird</button>
     </div>
     <!-- Platzhalter Games 2-12 -->
@@ -76,13 +76,14 @@ function startGame10(){ alert("Game 10 coming soon"); }
 function startGame11(){ alert("Game 11 coming soon"); }
 function startGame12(){ alert("Game 12 coming soon"); }
 
-// --- AgentBird Dynamic Weather & Difficulty ---
+// --- AgentBird with Collision Fix & Classic Rain ---
 function startAgentBird(container){
   container.innerHTML='';
   if(gameLoopId) cancelAnimationFrame(gameLoopId);
 
   const canvas=document.createElement('canvas');
-  canvas.width=800; canvas.height=500; canvas.style.background='#87CEEB';
+  canvas.width=800; canvas.height=500;
+  canvas.style.background='#87CEEB';
   container.appendChild(canvas);
   const ctx=canvas.getContext('2d');
 
@@ -103,35 +104,31 @@ function startAgentBird(container){
 
   const geese=[],planes=[],powerups=[],bullets=[],enemyBullets=[],particles=[];
   let shootCooldown=0,score=0,difficulty=1;
-  let weather='clear',weatherTimer=0;
 
   canvas.addEventListener('mousemove',e=>player.y=e.clientY-canvas.getBoundingClientRect().top-player.height/2);
   canvas.addEventListener('touchmove',e=>player.y=e.touches[0].clientY-canvas.getBoundingClientRect().top-player.height/2);
   canvas.addEventListener('click',()=>{ if(shootCooldown<=0){ bullets.push({x:player.x+player.width,y:player.y+player.height/2,width:10,height:4,speed:8}); shootCooldown=20; } });
 
-  function checkCollision(a,b){ return a.x<a.x+b.width && a.x+a.width>b.x && a.y<a.y+b.height && a.y+a.height>b.y; }
-
-  function changeWeather(){
-    const options=['clear','rain','snow','storm','lightning'];
-    weather=options[Math.floor(Math.random()*options.length)];
-    weatherTimer=0;
+  function checkCollision(a,b){
+    return a.x < b.x + b.width &&
+           a.x + a.width > b.x &&
+           a.y < b.y + b.height &&
+           a.y + a.height > b.y;
   }
 
   function spawnEntities(){
     if(Math.random()<0.01*difficulty) geese.push({x:800,y:Math.random()*400,width:50,height:40,color:'gray',speed:2+difficulty/2,shootCooldown:Math.random()*100});
-    if(Math.random()<0.005*difficulty) planes.push({x:800,y:Math.random()*200+50,width:80,height:40,color:'black',speed:2+difficulty/2,angle:Math.random()*Math.PI/4,shootCooldown:Math.random()*100});
+    if(Math.random()<0.005*difficulty) planes.push({x:800,y:Math.random()*200+50,width:80,height:40,color:'black',speed:2+difficulty/2,shootCooldown:Math.random()*100});
     if(Math.random()<0.002) powerups.push({x:800,y:Math.random()*400,width:20,height:20,type:'life',speed:2});
-    if(Math.random()<0.05) particles.push({x:Math.random()*800,y:0,speed:Math.random()*3+1,type:Math.random()<0.5?'rain':'snow'}); 
-    if(Math.random()<0.005) particles.push({x:Math.random()*800,y:Math.random()*200,type:'lightning',duration:3});
+    // Classic Rain
+    if(Math.random()<0.05) particles.push({x:Math.random()*800,y:0,speed:Math.random()*3+1,type:'rain'}); 
   }
 
   function updateEntities(){
     if(shootCooldown>0) shootCooldown--;
     if(player.y<0) player.y=0; if(player.y+player.height>canvas.height) player.y=canvas.height-player.height;
 
-    weatherTimer++;
-    if(weatherTimer>1200){ changeWeather(); difficulty+=0.2; }
-
+    difficulty += 0.001; // Steigert langsam die Schwierigkeit
     spawnEntities();
 
     geese.forEach((g,i)=>{ 
@@ -159,8 +156,8 @@ function startAgentBird(container){
 
     bullets.forEach((b,i)=>{ 
       b.x+=b.speed; 
-      geese.forEach((g,j)=>{ if(checkCollision(b,g)){ bullets.splice(i,1); geese.splice(j,1); particles.push({x:g.x,y:g.y,type:'explosion',duration:5}); } });
-      planes.forEach((p,j)=>{ if(checkCollision(b,p)){ bullets.splice(i,1); planes.splice(j,1); particles.push({x:p.x,y:p.y,type:'explosion',duration:5}); } });
+      geese.forEach((g,j)=>{ if(checkCollision(b,g)){ bullets.splice(i,1); geese.splice(j,1); } });
+      planes.forEach((p,j)=>{ if(checkCollision(b,p)){ bullets.splice(i,1); planes.splice(j,1); } });
       if(b.x>canvas.width) bullets.splice(i,1);
     });
 
@@ -172,9 +169,6 @@ function startAgentBird(container){
 
     particles.forEach((pt,i)=>{ 
       if(pt.type==='rain'){ pt.y+=pt.speed; if(pt.y>canvas.height) particles.splice(i,1); }
-      else if(pt.type==='snow'){ pt.y+=pt.speed/2; pt.x+=Math.sin(pt.y*0.05)*1.5; if(pt.y>canvas.height) particles.splice(i,1); }
-      else if(pt.type==='lightning'){ pt.duration-=0.05; if(pt.duration<=0) particles.splice(i,1); }
-      else if(pt.type==='explosion'){ pt.duration-=0.1; if(pt.duration<=0) particles.splice(i,1); }
     });
 
     if(player.lives<=0) restartBtn.style.display='block';
@@ -186,23 +180,10 @@ function startAgentBird(container){
 
   function drawEntities(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
-
-    // Background by weather
-    if(weather==='rain'){ ctx.fillStyle='#A0C4FF'; }
-    else if(weather==='snow'){ ctx.fillStyle='#BFD8E0'; }
-    else if(weather==='storm'){ ctx.fillStyle='#708090'; }
-    else if(weather==='lightning'){ ctx.fillStyle='#87CEEB'; }
-    else{ ctx.fillStyle='#87CEEB'; }
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-
+    ctx.fillStyle='#87CEEB'; ctx.fillRect(0,0,canvas.width,canvas.height);
     ctx.fillStyle='#228B22'; ctx.fillRect(0,canvas.height-50,canvas.width,50);
 
-    particles.forEach(pt=>{
-      if(pt.type==='rain'){ ctx.fillStyle='blue'; ctx.fillRect(pt.x,pt.y,2,10); }
-      else if(pt.type==='snow'){ ctx.fillStyle='white'; ctx.fillRect(pt.x,pt.y,4,4); }
-      else if(pt.type==='lightning'){ ctx.strokeStyle='yellow'; ctx.beginPath(); ctx.moveTo(pt.x,pt.y); ctx.lineTo(pt.x+Math.random()*20-10,pt.y+20); ctx.stroke(); }
-      else if(pt.type==='explosion'){ ctx.fillStyle='orange'; ctx.beginPath(); ctx.arc(pt.x,pt.y,8*Math.random(),0,Math.PI*2); ctx.fill(); }
-    });
+    particles.forEach(pt=>{ if(pt.type==='rain'){ ctx.fillStyle='blue'; ctx.fillRect(pt.x,pt.y,2,10); } });
 
     ctx.fillStyle=player.blink>0?'red':player.color;
     ctx.fillRect(player.x,player.y,player.width,player.height);
@@ -214,7 +195,7 @@ function startAgentBird(container){
     enemyBullets.forEach(b=>{ ctx.fillStyle='black'; ctx.fillRect(b.x,b.y,b.width,b.height); });
 
     ctx.fillStyle='black'; ctx.font='16px Arial';
-    ctx.fillText('Lives: '+player.lives+' | Score: '+Math.floor(score)+' | Weather: '+weather+' | Difficulty: '+difficulty.toFixed(1),10,20);
+    ctx.fillText('Lives: '+player.lives+' | Score: '+Math.floor(score)+' | Difficulty: '+difficulty.toFixed(1),10,20);
   }
 
   function loop(){ updateEntities(); drawEntities(); gameLoopId=requestAnimationFrame(loop); }
