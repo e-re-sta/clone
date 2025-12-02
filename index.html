@@ -16,11 +16,11 @@ p { text-align:center; color:#333; margin-bottom:20px; }
 .btn { padding:10px; border:none; border-radius:5px; cursor:pointer; background:orange; color:white; }
 .btn:hover { background:#ff9500; }
 #gameContainer { margin:auto; max-width:800px; min-height:500px; background:white; border:2px solid #ccc; border-radius:10px; position:relative; display:none; overflow:hidden; }
+#livesDisplay { position:absolute; top:10px; left:10px; font-size:20px; color:white; background:rgba(0,0,0,0.3); padding:5px 10px; border-radius:5px; }
+canvas { display:block; margin:auto; background:#87CEEB; }
 .controlBtn { position:absolute; bottom:10px; padding:5px 10px; font-size:14px; border:none; border-radius:5px; cursor:pointer; color:white; }
 .backBtn { left:10px; background:red; }
 .restartBtn { left:120px; background:green; display:none; }
-#livesDisplay { position:absolute; top:10px; left:10px; font-size:20px; color:white; background:rgba(0,0,0,0.3); padding:5px 10px; border-radius:5px; }
-canvas { display:block; margin:auto; background:#87CEEB; }
 </style>
 </head>
 <body>
@@ -33,7 +33,7 @@ canvas { display:block; margin:auto; background:#87CEEB; }
   <div class="game-grid" id="gameGrid">
     <div class="game-card">
       <div class="game-title">Game 1: AgentBird</div>
-      <p>Fly through the sky, avoid enemies, survive!</p>
+      <p>Fly through the sky, avoid enemies, collect power-ups!</p>
       <button class="btn" onclick="startGame1()">Play AgentBird</button>
     </div>
     <!-- Platzhalter Games 2-12 -->
@@ -59,84 +59,82 @@ canvas { display:block; margin:auto; background:#87CEEB; }
 </main>
 
 <script>
+// --- Game Grid Functions ---
 const canvas = document.getElementById('agentBirdCanvas');
 const ctx = canvas.getContext('2d');
 const container = document.getElementById('gameContainer');
 const livesDisplay = document.getElementById('livesDisplay');
 const restartBtn = container.querySelector('.restartBtn');
 
-let player, enemies, bullets, enemyBullets, score, lives, shootCooldown, difficulty, gameLoopId;
+let player, enemies, bullets, enemyBullets, powerUps, lives, score, shootCooldown, difficulty, gameLoopId;
+let gameActive = false;
 
-// --- Game Grid Functions ---
 function startGame1(){ document.getElementById('gameGrid').style.display='none'; container.style.display='block'; startAgentBird(); }
-function backToGrid(){ cancelAnimationFrame(gameLoopId); container.style.display='none'; document.getElementById('gameGrid').style.display='grid'; }
+function backToGrid(){ cancelAnimationFrame(gameLoopId); container.style.display='none'; document.getElementById('gameGrid').style.display='grid'; gameActive=false; }
 
-// --- AgentBird Version A ---
+// --- Touch & Mouse Steuerung ---
+canvas.addEventListener('mousemove', e => { if(player && gameActive) player.y = e.clientY - canvas.getBoundingClientRect().top - player.height/2; });
+canvas.addEventListener('touchmove', e => { if(player && gameActive) player.y = e.touches[0].clientY - canvas.getBoundingClientRect().top - player.height/2; });
+canvas.onclick = ()=>{ if(!gameActive) return; if(shootCooldown<=0){ bullets.push({x:player.x+player.width,y:player.y+player.height/2,width:10,height:4,speed:8}); shootCooldown=20; } }
+
+// --- Collision ---
+function checkCollision(a,b){ return a.x<b.x+b.width && a.x+a.width>b.x && a.y<b.y+b.height && a.y+a.height>b.y; }
+
+// --- AgentBird Touch-Version ---
 function startAgentBird(){
     player={x:100,y:250,width:40,height:30,color:'orange',blink:0};
-    enemies=[]; bullets=[]; enemyBullets=[]; score=0; lives=3; shootCooldown=0; difficulty=1;
-    restartBtn.style.display='none';
+    enemies=[]; bullets=[]; enemyBullets=[]; powerUps=[]; lives=3; score=0; shootCooldown=0; difficulty=1;
+    gameActive=true; restartBtn.style.display='none';
 
-    // --- Touch/Mouse Steuerung ---
-    canvas.onmousemove = e => player.y = e.clientY - canvas.getBoundingClientRect().top - player.height/2;
-    canvas.ontouchmove = e => { player.y = e.touches[0].clientY - canvas.getBoundingClientRect().top - player.height/2; };
-    canvas.onclick = ()=>{ if(shootCooldown<=0){ bullets.push({x:player.x+player.width,y:player.y+player.height/2,width:10,height:4,speed:8}); shootCooldown=20;} }
-
-    function checkCollision(a,b){ return a.x<b.x+b.width && a.x+a.width>b.x && a.y<b.y+b.height && a.y+a.height>b.y; }
-
-    function spawnEnemies(){
-        if(Math.random()<0.01*difficulty) enemies.push({x:800,y:Math.random()*400,width:50,height:40,color:'gray',speed:2+difficulty/2,shootCooldown:Math.random()*100});
-    }
+    function spawnEnemies(){ if(Math.random()<0.01*difficulty) enemies.push({x:800,y:Math.random()*400,width:50,height:40,color:'gray',speed:2+difficulty/2,shootCooldown:Math.random()*100}); }
+    function spawnPowerUps(){ if(Math.random()<0.002) powerUps.push({x:800,y:Math.random()*400,width:20,height:20,color:'gold',type:'life',speed:2}); }
 
     function update(){
+        if(!gameActive) return;
         if(shootCooldown>0) shootCooldown--;
         if(player.y<0) player.y=0;
         if(player.y+player.height>canvas.height-50) player.y=canvas.height-50-player.height;
+        spawnEnemies(); spawnPowerUps(); difficulty+=0.001;
 
-        spawnEnemies();
-        difficulty += 0.001;
-
+        // enemies
         enemies.forEach((e,i)=>{
             e.x-=e.speed;
             e.shootCooldown--;
-            if(e.shootCooldown<=0){ enemyBullets.push({x:e.x,y:e.y+e.height/2,width:8,height:4,speed:-5-difficulty/2}); e.shootCooldown=100+Math.random()*50;}
-            if(checkCollision(player,e)){ lives--; player.blink=10; enemies.splice(i,1); }
+            if(e.shootCooldown<=0){ enemyBullets.push({x:e.x,y:e.y+e.height/2,width:8,height:4,speed:-5-difficulty/2}); e.shootCooldown=100+Math.random()*50; }
+            if(checkCollision(player,e)){ lives--; player.blink=10; enemies.splice(i,1);}
             if(e.x+e.width<0) enemies.splice(i,1);
         });
 
+        // bullets
         bullets.forEach((b,i)=>{
             b.x+=b.speed;
             enemies.forEach((e,j)=>{ if(checkCollision(b,e)){ bullets.splice(i,1); enemies.splice(j,1); } });
             if(b.x>canvas.width) bullets.splice(i,1);
         });
 
-        enemyBullets.forEach((b,i)=>{
-            b.x+=b.speed;
-            if(checkCollision(b,player)){ lives--; player.blink=10; enemyBullets.splice(i,1);}
-            if(b.x<0) enemyBullets.splice(i,1);
-        });
+        // enemy bullets
+        enemyBullets.forEach((b,i)=>{ b.x+=b.speed; if(checkCollision(b,player)){ lives--; player.blink=10; enemyBullets.splice(i,1); } if(b.x<0) enemyBullets.splice(i,1); });
 
-        if(lives<=0) restartBtn.style.display='block'; else restartBtn.style.display='none';
-        score+=0.1;
-        if(player.blink>0) player.blink--;
+        // power-ups
+        powerUps.forEach((p,i)=>{ p.x-=p.speed; if(checkCollision(p,player)){ if(p.type==='life') lives++; powerUps.splice(i,1); } if(p.x<0) powerUps.splice(i,1); });
+
+        if(lives<=0){ gameActive=false; restartBtn.style.display='block'; }
+        score+=0.1; if(player.blink>0) player.blink--;
     }
 
     function draw(){
         ctx.clearRect(0,0,canvas.width,canvas.height);
         ctx.fillStyle='#87CEEB'; ctx.fillRect(0,0,canvas.width,canvas.height);
         ctx.fillStyle='#2e8b57'; ctx.fillRect(0,canvas.height-50,canvas.width,50);
-
-        ctx.fillStyle=player.blink>0?'red':player.color;
-        ctx.fillRect(player.x,player.y,player.width,player.height);
-
+        ctx.fillStyle=player.blink>0?'red':player.color; ctx.fillRect(player.x,player.y,player.width,player.height);
         enemies.forEach(e=>{ ctx.fillStyle=e.color; ctx.fillRect(e.x,e.y,e.width,e.height); });
         bullets.forEach(b=>{ ctx.fillStyle='yellow'; ctx.fillRect(b.x,b.y,b.width,b.height); });
         enemyBullets.forEach(b=>{ ctx.fillStyle='black'; ctx.fillRect(b.x,b.y,b.width,b.height); });
-
+        powerUps.forEach(p=>{ ctx.fillStyle=p.color; ctx.fillRect(p.x,p.y,p.width,p.height); });
         livesDisplay.innerText=`Lives: ${lives} | Score: ${Math.floor(score)}`;
     }
 
-    function loop(){ update(); draw(); gameLoopId=requestAnimationFrame(loop); }
+    function loop(){ update(); draw(); if(gameActive) gameLoopId=requestAnimationFrame(loop); }
     loop();
 }
 </script>
