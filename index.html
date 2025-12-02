@@ -16,8 +16,8 @@
   body {
     margin:0;
     font-family: Arial, sans-serif;
-    background-color: var(--bg-color-light);
-    color: var(--text-color-light);
+    background-color: var(--bg-color-dark);
+    color: var(--text-color-dark);
     transition: background-color 0.3s, color 0.3s;
   }
   body.dark {
@@ -68,22 +68,20 @@
   }
 </style>
 </head>
-<body>
+<body class="dark">
 <header id="reload-header">clone</header>
 <button id="dark-toggle">Toggle Darkmode</button>
 <div id="main"></div>
 
 <script>
-  // Darkmode persist
-  let dark = localStorage.getItem('dark') === 'true';
-  if(dark) document.body.classList.add('dark');
+  // Darkmode immer aktiv beim Seitenaufruf
+  localStorage.setItem('dark', true);
+
   document.getElementById('dark-toggle').addEventListener('click', () => {
     document.body.classList.toggle('dark');
-    dark = document.body.classList.contains('dark');
-    localStorage.setItem('dark', dark);
+    localStorage.setItem('dark', document.body.classList.contains('dark'));
   });
 
-  // Reload on header click
   document.getElementById('reload-header').addEventListener('click', ()=> location.reload());
 
   const totalPages = 5;
@@ -131,7 +129,6 @@
     const main = document.getElementById('main');
     main.innerHTML = '';
 
-    // Game-Content
     const gameDiv = document.createElement('div');
     gameDiv.innerHTML = `
       <h2>Game ${(currentPage-1)*gamesPerPage + gameNumber}</h2>
@@ -142,10 +139,8 @@
     `;
     main.appendChild(gameDiv);
 
-    // Back button
     document.getElementById('back-main').addEventListener('click', renderMain);
 
-    // Payment placeholders
     const wallets = walletAddress();
     document.getElementById('pay-eth').addEventListener('click', ()=>{
       alert(`ETH payment to ${wallets.eth} placeholder`);
