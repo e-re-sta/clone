@@ -5,22 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OrangeWeb - Game Hub</title>
 <style>
-  body { font-family: Arial, sans-serif; margin:0; padding:0; background:#f0f0f5; }
-  header { background: orange; color: white; padding: 15px; font-size: 28px; text-align:center; font-weight:bold; box-shadow:0 2px 5px rgba(0,0,0,0.3);}
-  main { padding:20px; max-width:1200px; margin:auto; }
-  h2 { text-align:center; margin-bottom:5px; }
-  p { text-align:center; color:#333; margin-bottom:20px; font-size:16px; }
-  .game-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:20px; margin-bottom:30px; }
-  .game-card { background:white; padding:15px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1); display:flex; flex-direction:column; justify-content:space-between; transition:transform 0.2s; }
-  .game-card:hover { transform:translateY(-5px); }
-  .game-title { font-weight:bold; font-size:18px; margin-bottom:10px; }
-  .game-desc { flex:1; font-size:14px; color:#555; margin-bottom:10px; }
-  .btn { padding:10px 15px; font-size:14px; border:none; border-radius:5px; cursor:pointer; background:orange; color:white; transition:0.2s; }
-  .btn:hover { background:#ff9500; }
-  #gameContainer { margin:auto; max-width:800px; min-height:500px; background:white; border:2px solid #ccc; border-radius:10px; position:relative; display:none; }
-  .controlBtn { position:absolute; bottom:10px; padding:5px 10px; font-size:14px; border:none; border-radius:5px; cursor:pointer; color:white; }
-  .backBtn { left:10px; background:red; }
-  .restartBtn { left:120px; background:green; display:none; }
+body { font-family: Arial; margin:0; background:#f0f0f5; }
+header { background:orange; color:white; padding:15px; text-align:center; font-size:28px; }
+main { padding:20px; max-width:1200px; margin:auto; }
+h2 { text-align:center; margin-bottom:5px; }
+p { text-align:center; color:#333; margin-bottom:20px; }
+.game-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:20px; margin-bottom:30px; }
+.game-card { background:white; padding:15px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1); display:flex; flex-direction:column; justify-content:space-between; }
+.game-title { font-weight:bold; margin-bottom:10px; }
+.btn { padding:10px; border:none; border-radius:5px; cursor:pointer; background:orange; color:white; }
+.btn:hover { background:#ff9500; }
+#gameContainer { margin:auto; max-width:800px; min-height:500px; background:white; border:2px solid #ccc; border-radius:10px; position:relative; display:none; }
+.controlBtn { position:absolute; bottom:10px; padding:5px 10px; font-size:14px; border:none; border-radius:5px; cursor:pointer; color:white; }
+.backBtn { left:10px; background:red; }
+.restartBtn { left:120px; background:green; display:none; }
 </style>
 </head>
 <body>
@@ -31,50 +29,40 @@
   <p>Hier entsteht selfmade wie immer</p>
 
   <div class="game-grid" id="gameGrid">
-    <!-- Game 1 -->
     <div class="game-card">
       <div class="game-title">Game 1: AgentBird</div>
-      <div class="game-desc">Fly through storms, dodge enemies, survive with powerups! Touch control supported.</div>
       <button class="btn" onclick="startGame1()">Play</button>
     </div>
-    <!-- Placeholder Games 2-12 -->
-    <div class="game-card"><div class="game-title">Game 2</div><div class="game-desc">Coming soon...</div><button class="btn" onclick="startGame2()">Play</button></div>
-    <div class="game-card"><div class="game-title">Game 3</div><div class="game-desc">Coming soon...</div><button class="btn" onclick="startGame3()">Play</button></div>
-    <div class="game-card"><div class="game-title">Game 4</div><div class="game-desc">Coming soon...</div><button class="btn" onclick="startGame4()">Play</button></div>
-    <div class="game-card"><div class="game-title">Game 5</div><div class="game-desc">Coming soon...</div><button class="btn" onclick="startGame5()">Play</button></div>
-    <div class="game-card"><div class="game-title">Game 6</div><div class="game-desc">Coming soon...</div><button class="btn" onclick="startGame6()">Play</button></div>
-    <div class="game-card"><div class="game-title">Game 7</div><div class="game-desc">Coming soon...</div><button class="btn" onclick="startGame7()">Play</button></div>
-    <div class="game-card"><div class="game-title">Game 8</div><div class="game-desc">Coming soon...</div><button class="btn" onclick="startGame8()">Play</button></div>
-    <div class="game-card"><div class="game-title">Game 9</div><div class="game-desc">Coming soon...</div><button class="btn" onclick="startGame9()">Play</button></div>
-    <div class="game-card"><div class="game-title">Game 10</div><div class="game-desc">Coming soon...</div><button class="btn" onclick="startGame10()">Play</button></div>
-    <div class="game-card"><div class="game-title">Game 11</div><div class="game-desc">Coming soon...</div><button class="btn" onclick="startGame11()">Play</button></div>
-    <div class="game-card"><div class="game-title">Game 12</div><div class="game-desc">Coming soon...</div><button class="btn" onclick="startGame12()">Play</button></div>
+    <!-- Platzhalter Games 2-12 -->
+    <div class="game-card"><div class="game-title">Game 2</div><button class="btn" onclick="startGame2()">Play</button></div>
+    <div class="game-card"><div class="game-title">Game 3</div><button class="btn" onclick="startGame3()">Play</button></div>
+    <div class="game-card"><div class="game-title">Game 4</div><button class="btn" onclick="startGame4()">Play</button></div>
+    <div class="game-card"><div class="game-title">Game 5</div><button class="btn" onclick="startGame5()">Play</button></div>
+    <div class="game-card"><div class="game-title">Game 6</div><button class="btn" onclick="startGame6()">Play</button></div>
+    <div class="game-card"><div class="game-title">Game 7</div><button class="btn" onclick="startGame7()">Play</button></div>
+    <div class="game-card"><div class="game-title">Game 8</div><button class="btn" onclick="startGame8()">Play</button></div>
+    <div class="game-card"><div class="game-title">Game 9</div><button class="btn" onclick="startGame9()">Play</button></div>
+    <div class="game-card"><div class="game-title">Game 10</div><button class="btn" onclick="startGame10()">Play</button></div>
+    <div class="game-card"><div class="game-title">Game 11</div><button class="btn" onclick="startGame11()">Play</button></div>
+    <div class="game-card"><div class="game-title">Game 12</div><button class="btn" onclick="startGame12()">Play</button></div>
   </div>
 
   <div id="gameContainer"></div>
 </main>
 
 <script>
-// ----------------- GLOBALS -----------------
-let gameLoopId = null;
-let restarts = 250;
-let currentPlayer = null;
+let gameLoopId=null;
+let currentPlayer=null;
+let restarts=250;
 
-// ----------------- GRID CONTROL -----------------
 function hideGameGrid(){ document.getElementById('gameGrid').style.display='none'; }
 function showGameGrid(){ document.getElementById('gameGrid').style.display='grid'; }
 function showGameContainer(){ document.getElementById('gameContainer').style.display='block'; }
 function hideGameContainer(){ document.getElementById('gameContainer').style.display='none'; if(gameLoopId) cancelAnimationFrame(gameLoopId); }
 
-// ----------------- START GAME 1 -----------------
-function startGame1(){
-  console.log("Game 1 gestartet"); // Debug
-  hideGameGrid();
-  showGameContainer();
-  startAgentBird(document.getElementById('gameContainer'));
-}
+function startGame1(){ hideGameGrid(); showGameContainer(); startAgentBird(document.getElementById('gameContainer')); }
 
-// ----------------- PLACEHOLDER GAMES -----------------
+// Platzhalter
 function startGame2(){ alert("Game 2 coming soon"); }
 function startGame3(){ alert("Game 3 coming soon"); }
 function startGame4(){ alert("Game 4 coming soon"); }
@@ -87,91 +75,87 @@ function startGame10(){ alert("Game 10 coming soon"); }
 function startGame11(){ alert("Game 11 coming soon"); }
 function startGame12(){ alert("Game 12 coming soon"); }
 
-// ----------------- AGENTBIRD -----------------
+// --- AgentBird Visual Version ---
 function startAgentBird(container){
   container.innerHTML='';
   if(gameLoopId) cancelAnimationFrame(gameLoopId);
 
-  const canvas = document.createElement('canvas');
-  canvas.width=800; canvas.height=500;
-  canvas.style.background='#87CEEB';
+  const canvas=document.createElement('canvas');
+  canvas.width=800; canvas.height=500; canvas.style.background='#87CEEB';
   container.appendChild(canvas);
-  const ctx = canvas.getContext('2d');
+  const ctx=canvas.getContext('2d');
 
-  // Buttons
-  const backBtn = document.createElement('button');
+  const backBtn=document.createElement('button');
   backBtn.className='controlBtn backBtn';
   backBtn.innerText='Back';
-  backBtn.onclick=()=>{
-    container.innerHTML='';
-    hideGameContainer();
-    showGameGrid();
-  };
+  backBtn.onclick=()=>{ container.innerHTML=''; hideGameContainer(); showGameGrid(); };
   container.appendChild(backBtn);
 
-  const restartBtn = document.createElement('button');
+  const restartBtn=document.createElement('button');
   restartBtn.className='controlBtn restartBtn';
   restartBtn.innerText='Restart';
   restartBtn.onclick=()=>{ startAgentBird(container); };
   container.appendChild(restartBtn);
 
   // Player
-  const player={x:100,y:250,width:40,height:30,color:'orange',shield:0,lives:3,speed:4};
+  const player={x:100,y:250,width:40,height:30,color:'orange',lives:3,speed:4};
   currentPlayer=player;
-  let score=0,onGround=false,gameOver=false;
-  const groundY=canvas.height-50;
-  const geese=[],bullets=[],planes=[],shots=[],powerups=[],particles=[],bosses=[],specials=[];
-  let shootCooldown=0;
 
-  // Steuerung
-  canvas.addEventListener('mousemove',e=>movePlayer(e.clientY));
-  canvas.addEventListener('touchstart',e=>movePlayer(e.touches[0].clientY));
-  canvas.addEventListener('touchmove',e=>movePlayer(e.touches[0].clientY));
-  canvas.addEventListener('click',shoot);
-  canvas.addEventListener('touchend',shoot);
+  const geese=[],planes=[],powerups=[],bullets=[],particles=[];
+  let shootCooldown=0,score=0;
 
-  function movePlayer(y){
-    const rect=canvas.getBoundingClientRect();
-    player.y=Math.max(0,Math.min(canvas.height-player.height,y-rect.top-player.height/2));
-  }
+  canvas.addEventListener('mousemove',e=>player.y=e.clientY-canvas.getBoundingClientRect().top-player.height/2);
+  canvas.addEventListener('touchmove',e=>player.y=e.touches[0].clientY-canvas.getBoundingClientRect().top-player.height/2);
+  canvas.addEventListener('click',()=>{ if(shootCooldown<=0){ bullets.push({x:player.x+player.width,y:player.y+player.height/2,width:10,height:4,speed:8}); shootCooldown=20; } });
 
-  function shoot(){ if(shootCooldown<=0&&!gameOver){ shots.push({x:player.x+player.width,y:player.y+player.height/2-2,width:10,height:4,speed:8}); shootCooldown=20; } }
-
-  // Gegner & Powerups
-  function spawnGeese(){ if(Math.random()<0.01) geese.push({x:800,y:Math.random()*400,width:50,height:40,color:'gray',cooldown:100}); }
+  function spawnGeese(){ if(Math.random()<0.01) geese.push({x:800,y:Math.random()*400,width:50,height:40,color:'gray',speed:2}); }
   function spawnPlanes(){ if(Math.random()<0.005) planes.push({x:800,y:Math.random()*200+50,width:80,height:40,color:'black',speed:2}); }
-  function spawnPowerups(){ if(Math.random()<0.002){ const type=Math.random()<0.5?'shield':'life'; powerups.push({x:800,y:Math.random()*400,width:20,height:20,type,speed:2}); } }
-  function spawnWeather(){
-    if(Math.random()<0.05) particles.push({x:Math.random()*800,y:0,speed:Math.random()*3+1,type:'snow'});
-    if(Math.random()<0.02) particles.push({x:Math.random()*800,y:0,speed:Math.random()*5+2,type:'rain'});
-    if(Math.random()<0.001) particles.push({x:Math.random()*800,y:Math.random()*200,type:'lightning',life:10});
-  }
-  function spawnBoss(){ if(score>500 && bosses.length===0) bosses.push({x:750,y:200,width:80,height:60,color:'darkred',lives:20,speed:2}); }
-  function spawnSpecialEnemy(){ if(score>200 && Math.random()<0.005) specials.push({x:800,y:Math.random()*200+50,width:60,height:40,color:'purple',speed:3}); }
-
-  function collide(a,b){ return a.x<a.x+b.width && a.x+a.width>b.x && a.y<b.y+b.height && a.y+ a.height>b.y; }
+  function spawnPowerups(){ if(Math.random()<0.002) powerups.push({x:800,y:Math.random()*400,width:20,height:20,type:'life',speed:2}); }
+  function spawnParticles(){ if(Math.random()<0.05) particles.push({x:Math.random()*800,y:0,speed:Math.random()*3+1,type:'rain'}); }
 
   function update(){
     if(shootCooldown>0) shootCooldown--;
-    if(player.y+player.height>=groundY){ player.y=groundY-player.height; onGround=true; score+=0.1; } else onGround=false;
-    if(gameOver) return;
-    spawnGeese(); spawnPlanes(); spawnPowerups(); spawnWeather(); spawnBoss(); spawnSpecialEnemy();
-    // ... (Rest wie vorher: Bewegung, Kollision, Score, Powerups, Boss, Specials)
+    if(player.y<0) player.y=0; if(player.y+player.height>canvas.height) player.y=canvas.height-player.height;
+    spawnGeese(); spawnPlanes(); spawnPowerups(); spawnParticles();
+
+    // Geese
+    geese.forEach((g,i)=>{ g.x-=g.speed; if(g.x+g.width<0) geese.splice(i,1); });
+    // Planes
+    planes.forEach((p,i)=>{ p.x-=p.speed; if(p.x+p.width<0) planes.splice(i,1); });
+    // Powerups
+    powerups.forEach((p,i)=>{ p.x-=p.speed; if(p.x+p.width<0) powerups.splice(i,1);
+      if(player.x<p.x+p.width && player.x+player.width>p.x && player.y<p.y+p.height && player.y+player.height>p.y){ player.lives+=1; powerups.splice(i,1); } });
+    // Particles
+    particles.forEach((pt,i)=>{ pt.y+=pt.speed; if(pt.y>canvas.height) particles.splice(i,1); });
+    // Bullets
+    bullets.forEach((b,i)=>{ b.x+=b.speed; if(b.x>canvas.width) bullets.splice(i,1); });
+    score+=0.1;
   }
 
   function draw(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
     ctx.fillStyle='#87CEEB'; ctx.fillRect(0,0,canvas.width,canvas.height);
-    ctx.fillStyle='#228B22'; ctx.fillRect(0,groundY,canvas.width,canvas.height-groundY);
+    ctx.fillStyle='#228B22'; ctx.fillRect(0,canvas.height-50,canvas.width,50);
     ctx.fillStyle=player.color; ctx.fillRect(player.x,player.y,player.width,player.height);
-    // ... (Rest wie vorher: draw Gegner, Powerups, Boss, Specials, Partikel, HUD)
+
+    geese.forEach(g=>{ ctx.fillStyle=g.color; ctx.fillRect(g.x,g.y,g.width,g.height); });
+    planes.forEach(p=>{ ctx.fillStyle=p.color; ctx.fillRect(p.x,p.y,p.width,p.height); });
+    powerups.forEach(p=>{ ctx.fillStyle='yellow'; ctx.fillRect(p.x,p.y,p.width,p.height); });
+    bullets.forEach(b=>{ ctx.fillStyle='red'; ctx.fillRect(b.x,b.y,b.width,b.height); });
+    particles.forEach(pt=>{
+      if(pt.type==='rain'){ ctx.fillStyle='blue'; ctx.fillRect(pt.x,pt.y,2,10); }
+    });
+
+    // Scoreboard
+    ctx.fillStyle='black'; ctx.font='16px Arial';
+    ctx.fillText('Lives: '+player.lives+' | Score: '+Math.floor(score),10,20);
   }
 
   function loop(){ update(); draw(); gameLoopId=requestAnimationFrame(loop); }
   loop();
 }
 
-// --- TEST PAYMENT ---
+// Test Payment
 function paySOL(){ if(currentPlayer){ currentPlayer.lives+=5; alert("+5 Leben (Testmode)"); } }
 function payETH(){ restarts+=250; alert("+250 Restarts (Testmode)"); }
 </script>
