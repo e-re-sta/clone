@@ -1,156 +1,194 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OrangeWeb</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #fff7e6;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+  }
+  header {
+    padding: 10px;
+    background-color: orange;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  header button {
+    padding: 5px 15px;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+    border-radius: 4px;
+  }
+  h1 { margin: 20px 0 10px 0; }
+  p { margin: 0 0 20px 0; }
+  .game-buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    max-width: 800px;
+    margin: 0 auto 40px auto;
+  }
+  .game-buttons button {
+    padding: 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    background-color: orange;
+    color: white;
+    transition: 0.3s;
+  }
+  .game-buttons button:hover { background-color: darkorange; }
+  .game-placeholder {
+    display: none;
+    position: relative;
+    padding: 50px;
+    font-size: 24px;
+    background-color: #ffe0b2;
+    min-height: 300px;
+  }
+  .back-button {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    padding: 10px 15px;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+    border-radius: 4px;
+    background-color: orange;
+    color: white;
+  }
+  .pay-buttons button {
+    margin: 5px;
+    padding: 10px 20px;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 4px;
+    border: none;
+    background-color: #f57c00;
+    color: white;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>OrangeWeb</div>
+  <button onclick="location.reload()">Reload</button>
+</header>
+
+<h1>Have fun!</h1>
+<p>
+
+OrangeWeb – Your Gaming World, Directly in the Browser
+
+Discover 12 exciting games you can play instantly – no installation required. Pay securely with Ethereum (MetaMask) or Solana (Sollet) and start your adventure right away. At OrangeWeb, you choose which games to experience – anonymous and secure.
+</p>
+<div class="game-buttons">
+  <button onclick="playGame(1)">Game 1</button>
+  <button onclick="playGame(2)">Game 2</button>
+  <button onclick="playGame(3)">Game 3</button>
+  <button onclick="playGame(4)">Game 4</button>
+  <button onclick="playGame(5)">Game 5</button>
+  <button onclick="playGame(6)">Game 6</button>
+  <button onclick="playGame(7)">Game 7</button>
+  <button onclick="playGame(8)">Game 8</button>
+  <button onclick="playGame(9)">Game 9</button>
+  <button onclick="playGame(10)">Game 10</button>
+  <button onclick="playGame(11)">Game 11</button>
+  <button onclick="playGame(12)">Game 12</button>
+</div>
+
+<div id="gameContainer" class="game-placeholder">
+  <div id="gameContent"></div>
+  <div class="pay-buttons">
+    <button onclick="payEth()">Zahle ETH</button>
+    <button onclick="paySol()">Zahle SOL</button>
+  </div>
+  <button class="back-button" onclick="backToMain()">Back</button>
+</div>
+
 <script>
-const gameContent = document.getElementById('gameContainer');
-let game1LoopId = null;
+  // ==== Wallet-Adressen (einmal setzen) ====
+  const ETH_ADDRESS = "0x1111111111111111111111111111111111111111"; // <- hier ETH-Adresse einfügen
+  const SOL_ADDRESS = "So11111111111111111111111111111111111111111"; // <- hier SOL-Adresse einfügen
+  const ETH_AMOUNT = "0.01"; // ETH zu senden
+  const SOL_AMOUNT = 0.01; // SOL zu senden
 
-function backToMain(){
-  // Canvas löschen
-  gameContent.innerHTML = '';
-  // Game Loop stoppen
-  if(game1LoopId) cancelAnimationFrame(game1LoopId);
-  game1LoopId = null;
-}
+  const gameContainer = document.getElementById('gameContainer');
+  const gameContent = document.getElementById('gameContent');
+  const gameButtonsDiv = document.querySelector('.game-buttons');
 
-// ----------------- AGENTBIRD GAME 1 -----------------
-function startGame1() {
-  backToMain(); // sicherstellen, dass vorheriges Spiel gestoppt ist
-
-  const canvas = document.createElement('canvas');
-  canvas.width = 800;
-  canvas.height = 500;
-  canvas.style.backgroundColor = '#87CEEB';
-  gameContent.appendChild(canvas);
-  const ctx = canvas.getContext('2d');
-
-  // Back-Button
-  const backBtn = document.createElement('button');
-  backBtn.className = 'backBtn';
-  backBtn.innerText = 'Back';
-  backBtn.onclick = backToMain;
-  gameContent.appendChild(backBtn);
-
-  // Spieler
-  const player = { x:100, y:250, width:40, height:30, color:'orange', shield:0, speed:4 };
-  let score = 0;
-  let onGround = false;
-
-  const geese=[], bullets=[], planes=[], shots=[], powerups=[], particles=[];
-  const groundY = canvas.height-50;
-  let shootCooldown=0;
-
-  canvas.addEventListener('touchstart', e=>{e.preventDefault(); movePlayer(e.touches[0].clientY); });
-  canvas.addEventListener('touchmove', e=>{e.preventDefault(); movePlayer(e.touches[0].clientY); });
-  canvas.addEventListener('mousemove', e=>movePlayer(e.clientY));
-
-  function movePlayer(clientY){
-    const y = clientY - canvas.getBoundingClientRect().top - player.height/2;
-    player.y = Math.max(0, Math.min(canvas.height - player.height, y));
+  function playGame(num) {
+    gameButtonsDiv.style.display = 'none';
+    gameContainer.style.display = 'block';
+    gameContent.textContent = `Spiel ${num} Platzhalter`;
   }
 
-  canvas.addEventListener('click', shoot);
-  canvas.addEventListener('touchend', shoot);
-  function shoot(){
-    if(shootCooldown<=0){
-      shots.push({x:player.x+player.width, y:player.y+player.height/2-2, width:10, height:4, speed:8});
-      shootCooldown=20;
+  function backToMain() {
+    gameContainer.style.display = 'none';
+    gameButtonsDiv.style.display = 'grid';
+  }
+
+  // ==== Ethereum Payment über MetaMask ====
+  async function payEth() {
+    if (typeof window.ethereum === 'undefined') {
+      alert("MetaMask nicht gefunden!");
+      return;
+    }
+    try {
+      const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+      const tx = await ethereum.request({
+        method: 'eth_sendTransaction',
+        params: [{
+          from: accounts[0],
+          to: ETH_ADDRESS,
+          value: (ETH_AMOUNT * 1e18).toString(16), // ETH in wei
+        }],
+      });
+      alert("ETH Zahlung erfolgreich! Tx: " + tx);
+    } catch (err) {
+      console.error(err);
+      alert("ETH Zahlung fehlgeschlagen!");
     }
   }
 
-  function spawnGeese(){ if(Math.random()<0.01){ geese.push({ x:800, y:Math.random()*400, width:50, height:40, color:'gray', cooldown:100 }); } }
-  function spawnPlanes(){ if(Math.random()<0.005){ planes.push({ x:800, y:Math.random()*200+50, width:80, height:40, color:'black', speed:2 }); } }
-  function spawnPowerups(){ if(Math.random()<0.002){ const type = Math.random()<0.5?'shield':'speed'; powerups.push({ x:800, y:Math.random()*400, width:20, height:20, type, speed:2 }); } }
-  function spawnWeather(){
-    if(Math.random()<0.05) particles.push({ x:Math.random()*800, y:0, speed:Math.random()*3+1, type:'snow' });
-    if(Math.random()<0.02) particles.push({ x:Math.random()*800, y:0, speed:Math.random()*5+2, type:'rain' });
-    if(Math.random()<0.001) particles.push({ x:Math.random()*800, y:Math.random()*200, type:'lightning', life:10 });
-  }
-
-  function collide(a,b){ return a.x<a.x+a.width && b.x<b.x+b.width && a.y<a.y+a.height && b.y<b.y+b.height; }
-
-  function update(){
-    if(shootCooldown>0) shootCooldown--;
-
-    if(player.y + player.height >= groundY){
-      player.y = groundY - player.height;
-      onGround = true;
-      score += 1;
-    } else { onGround = false; }
-
-    if(!onGround){
-      geese.forEach((g,i)=>{
-        g.x -=2; g.cooldown--;
-        if(g.cooldown<=0){ bullets.push({ x:g.x, y:g.y+20, speed:5 }); g.cooldown=100; }
-        if(g.x+g.width<0) geese.splice(i,1);
-      });
-
-      bullets.forEach((b,i)=>{
-        b.x -= b.speed;
-        if(collide(player,b)){ if(player.shield>0){player.shield--; bullets.splice(i,1);} else{ alert("Getroffen! Spiel endet."); backToMain(); } }
-        if(b.x<0) bullets.splice(i,1);
-      });
-
-      planes.forEach((p,i)=>{
-        p.x -= p.speed;
-        if(collide(player,p)){ if(player.shield>0){player.shield--; planes.splice(i,1);} else{ alert("Getroffen! Spiel endet."); backToMain(); } }
-        if(p.x+p.width<0) planes.splice(i,1);
-      });
+  // ==== Solana Payment über Sollet ====
+  async function paySol() {
+    if (!window.sollet) {
+      alert("Sollet Wallet nicht gefunden!");
+      return;
     }
-
-    shots.forEach((s,i)=>{
-      s.x += s.speed;
-      geese.forEach((g,gi)=>{ if(collide(s,g)){ geese.splice(gi,1); shots.splice(i,1); score+=10; } });
-      planes.forEach((p,pi)=>{ if(collide(s,p)){ planes.splice(pi,1); shots.splice(i,1); score+=20; } });
-      if(s.x>canvas.width) shots.splice(i,1);
-    });
-
-    powerups.forEach((p,i)=>{
-      p.x -= p.speed;
-      if(collide(player,p)){
-        if(p.type==='shield') player.shield+=3;
-        if(p.type==='speed'){ player.speed=8; setTimeout(()=>{player.speed=4;},5000); }
-        powerups.splice(i,1);
-      }
-      if(p.x+p.width<0) powerups.splice(i,1);
-    });
-
-    particles.forEach((p,i)=>{
-      if(p.type==='snow' || p.type==='rain') p.y+=p.speed;
-      if(p.type==='lightning') p.life--;
-      if(p.y>canvas.height || p.life<=0) particles.splice(i,1);
-    });
-
-    spawnGeese(); spawnPlanes(); spawnWeather(); spawnPowerups();
-
-    score +=0.05;
+    try {
+      const provider = window.sollet;
+      await provider.connect();
+      const transaction = new window.solanaWeb3.Transaction().add(
+        window.solanaWeb3.SystemProgram.transfer({
+          fromPubkey: provider.publicKey,
+          toPubkey: new window.solanaWeb3.PublicKey(SOL_ADDRESS),
+          lamports: SOL_AMOUNT * 1e9, // SOL zu Lamports
+        })
+      );
+      const signature = await provider.sendTransaction(transaction, window.solanaWeb3.Connection);
+      alert("SOL Zahlung erfolgreich! Signature: " + signature);
+    } catch (err) {
+      console.error(err);
+      alert("SOL Zahlung fehlgeschlagen!");
+    }
   }
+</script>
 
-  function draw(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+<script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
+<script src="https://www.sollet.io/embed.js"></script>
 
-    ctx.fillStyle='#87CEEB';
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-    ctx.fillStyle='#228B22';
-    ctx.fillRect(0,groundY,canvas.width,canvas.height-groundY);
-
-    ctx.fillStyle=player.color;
-    ctx.fillRect(player.x,player.y,player.width,player.height);
-
-    geese.forEach(g=>{ ctx.fillStyle=g.color; ctx.fillRect(g.x,g.y,g.width,g.height); });
-    planes.forEach(p=>{ ctx.fillStyle=p.color; ctx.fillRect(p.x,p.y,p.width,p.height); });
-    bullets.forEach(b=>{ ctx.fillStyle='black'; ctx.fillRect(b.x,b.y,5,5); });
-    shots.forEach(s=>{ ctx.fillStyle='red'; ctx.fillRect(s.x,s.y,s.width,s.height); });
-
-    powerups.forEach(p=>{
-      ctx.fillStyle=p.type==='shield'?'cyan':'yellow';
-      ctx.fillRect(p.x,p.y,p.width,p.height);
-    });
-
-    particles.forEach(p=>{
-      if(p.type==='snow'){ ctx.fillStyle='white'; ctx.fillRect(p.x,p.y,4,4); }
-      else if(p.type==='rain'){ ctx.fillStyle='blue'; ctx.fillRect(p.x,p.y,2,8); }
-      else if(p.type==='lightning'){ ctx.strokeStyle='yellow'; ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(p.x+5,p.y+20); ctx.stroke(); }
-    });
-
-    ctx.fillStyle='black';
-    ctx.font='20px Arial';
-    ctx.fillText('Score: '+Math.floor(score),10,30);
-    ctx.fillText('Shield: '+player.sh
+</body>
+</html>
