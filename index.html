@@ -10,6 +10,7 @@
   #gameContainer { margin: 20px auto; max-width: 800px; min-height: 500px; background: #fff; border: 2px solid #ccc; position: relative; }
   .btn { margin:5px; padding:10px 15px; font-size:16px; cursor:pointer; border:none; border-radius:5px; background:orange; color:white; }
   .backBtn { position:absolute; bottom:10px; left:10px; padding:5px 10px; font-size:14px; background:red; color:white; }
+  .restartBtn { position:absolute; bottom:10px; left:120px; padding:5px 10px; font-size:14px; background:green; color:white; display:none; }
 </style>
 </head>
 <body>
@@ -41,13 +42,13 @@
 <!-- ----------------- AGENTBIRD SCRIPT ----------------- -->
 <script>
 let game1LoopId = null;
+let restarts = 250; // für Testmodus
+let currentPlayer = null;
 
 function startAgentBird(container) {
-  // Clear vorheriges Spiel
   container.innerHTML = '';
   if(game1LoopId) cancelAnimationFrame(game1LoopId);
 
-  // Canvas erstellen
   const canvas = document.createElement('canvas');
   canvas.width = 800;
   canvas.height = 500;
@@ -62,10 +63,19 @@ function startAgentBird(container) {
   backBtn.onclick = () => { container.innerHTML = ''; cancelAnimationFrame(game1LoopId); game1LoopId = null; };
   container.appendChild(backBtn);
 
+  // Restart Button
+  const restartBtn = document.createElement('button');
+  restartBtn.className = 'restartBtn';
+  restartBtn.innerText = 'Restart';
+  restartBtn.onclick = () => { startAgentBird(container); };
+  container.appendChild(restartBtn);
+
   // Spieler
-  const player = { x:100, y:250, width:40, height:30, color:'orange', shield:0 };
+  const player = { x:100, y:250, width:40, height:30, color:'orange', shield:0, lives:3 };
+  currentPlayer = player; // Referenz für Test-Zahlung
   let score = 0;
   let onGround = false;
+  let gameOver = false;
 
   const groundY = canvas.height - 50;
   const geese = [], bullets = [], planes = [], shots = [], powerups = [], particles = [];
@@ -84,7 +94,7 @@ function startAgentBird(container) {
   }
 
   function shoot() {
-    if(shootCooldown <= 0){
+    if(shootCooldown <= 0 && !gameOver){
       shots.push({x:player.x+player.width, y:player.y+player.height/2-2, width:10, height:4, speed:8});
       shootCooldown = 20;
     }
@@ -99,102 +109,61 @@ function startAgentBird(container) {
     if(Math.random()<0.001) particles.push({ x:Math.random()*800, y:Math.random()*200, type:'lightning', life:10 });
   }
 
-  function collide(a,b){
-    return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
-  }
+  function collide(a,b){ return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y; }
 
   function update(){
     if(shootCooldown>0) shootCooldown--;
+    if(player.y + player.height >= groundY){ player.y = groundY - player.height; onGround = true; score += 0.1; } else onGround = false;
+    if(gameOver) return;
 
-    if(player.y + player.height >= groundY){
-      player.y = groundY - player.height;
-      onGround = true;
-      score += 0.1;
-    } else onGround = false;
-
-    geese.forEach((g,i)=>{
-      g.x -= 2; g.cooldown--;
-      if(g.cooldown <= 0){ bullets.push({ x:g.x, y:g.y+20, speed:5 }); g.cooldown=100; }
-      if(g.x + g.width < 0) geese.splice(i,1);
-    });
+    geese.forEach((g,i)=>{ g.x -= 2; g.cooldown--; if(g.cooldown <= 0){ bullets.push({ x:g.x, y:g.y+20, speed:5 }); g.cooldown=100; } if(g.x + g.width < 0) geese.splice(i,1); });
     bullets.forEach((b,i)=>{
       b.x -= b.speed;
-      if(collide(player,b)){ if(player.shield>0){player.shield--; bullets.splice(i,1);} else{ alert("Game Over"); backBtn.click(); } }
+      if(collide(player,b)){ if(player.shield>0){ player.shield--; bullets.splice(i,1); } else { player.lives--; bullets.splice(i,1); if(player.lives<=0){ gameOver=true; if(restarts>0){ restarts--; startAgentBird(container); } else { restartBtn.style.display='block'; } } } }
       if(b.x<0) bullets.splice(i,1);
     });
-    planes.forEach((p,i)=>{
-      p.x -= p.speed;
-      if(collide(player,p)){ if(player.shield>0){player.shield--; planes.splice(i,1);} else{ alert("Game Over"); backBtn.click(); } }
-      if(p.x+p.width<0) planes.splice(i,1);
-    });
-
+    planes.forEach((p,i)=>{ p.x -= p.speed; if(collide(player,p)){ if(player.shield>0){ player.shield--; planes.splice(i,1); } else { player.lives--; planes.splice(i,1); if(player.lives<=0){ gameOver=true; if(restarts>0){ restarts--; startAgentBird(container); } else { restartBtn.style.display='block'; } } } } if(p.x+p.width<0) planes.splice(i,1); });
     shots.forEach((s,i)=>{
       s.x += s.speed;
       geese.forEach((g,gi)=>{ if(collide(s,g)){ geese.splice(gi,1); shots.splice(i,1); score+=10; } });
       planes.forEach((p,pi)=>{ if(collide(s,p)){ planes.splice(pi,1); shots.splice(i,1); score+=20; } });
       if(s.x>canvas.width) shots.splice(i,1);
     });
-
-    powerups.forEach((p,i)=>{
-      p.x -= p.speed;
-      if(collide(player,p)){
-        if(p.type==='shield') player.shield+=3;
-        if(p.type==='speed'){ player.speed=8; setTimeout(()=>{player.speed=4;},5000); }
-        powerups.splice(i,1);
-      }
-      if(p.x+p.width<0) powerups.splice(i,1);
-    });
-
-    particles.forEach((p,i)=>{
-      if(p.type==='snow'||p.type==='rain') p.y+=p.speed;
-      if(p.type==='lightning') p.life--;
-      if(p.y>canvas.height||p.life<=0) particles.splice(i,1);
-    });
-
+    powerups.forEach((p,i)=>{ p.x-=p.speed; if(collide(player,p)){ if(p.type==='shield') player.shield+=3; if(p.type==='speed'){ player.speed=8; setTimeout(()=>{player.speed=4;},5000);} powerups.splice(i,1);} if(p.x+p.width<0) powerups.splice(i,1); });
+    particles.forEach((p,i)=>{ if(p.type==='snow'||p.type==='rain') p.y+=p.speed; if(p.type==='lightning') p.life--; if(p.y>canvas.height||p.life<=0) particles.splice(i,1); });
     spawnGeese(); spawnPlanes(); spawnPowerups(); spawnWeather();
     score += 0.05;
   }
 
   function draw(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
-    ctx.fillStyle='#87CEEB';
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-    ctx.fillStyle='#228B22';
-    ctx.fillRect(0,groundY,canvas.width,canvas.height-groundY);
-    ctx.fillStyle=player.color;
-    ctx.fillRect(player.x,player.y,player.width,player.height);
-
+    ctx.fillStyle='#87CEEB'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='#228B22'; ctx.fillRect(0,groundY,canvas.width,canvas.height-groundY);
+    ctx.fillStyle=player.color; ctx.fillRect(player.x,player.y,player.width,player.height);
     geese.forEach(g=>{ ctx.fillStyle=g.color; ctx.fillRect(g.x,g.y,g.width,g.height); });
     planes.forEach(p=>{ ctx.fillStyle=p.color; ctx.fillRect(p.x,p.y,p.width,p.height); });
     bullets.forEach(b=>{ ctx.fillStyle='black'; ctx.fillRect(b.x,b.y,5,5); });
     shots.forEach(s=>{ ctx.fillStyle='red'; ctx.fillRect(s.x,s.y,s.width,s.height); });
-
-    powerups.forEach(p=>{
-      ctx.fillStyle=p.type==='shield'?'cyan':'yellow';
-      ctx.fillRect(p.x,p.y,p.width,p.height);
-    });
-
-    particles.forEach(p=>{
-      if(p.type==='snow') ctx.fillStyle='white';
-      else if(p.type==='rain') ctx.fillStyle='blue';
-      ctx.fillRect(p.x,p.y,4,4);
-      if(p.type==='lightning'){ ctx.strokeStyle='yellow'; ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(p.x+5,p.y+20); ctx.stroke(); }
-    });
+    powerups.forEach(p=>{ ctx.fillStyle=p.type==='shield'?'cyan':'yellow'; ctx.fillRect(p.x,p.y,p.width,p.height); });
+    particles.forEach(p=>{ if(p.type==='snow') ctx.fillStyle='white'; else if(p.type==='rain') ctx.fillStyle='blue'; ctx.fillRect(p.x,p.y,4,4); if(p.type==='lightning'){ ctx.strokeStyle='yellow'; ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(p.x+5,p.y+20); ctx.stroke(); } });
 
     ctx.fillStyle='black';
     ctx.font='20px Arial';
     ctx.fillText('Score: '+Math.floor(score),10,30);
     ctx.fillText('Shield: '+player.shield,10,60);
-    ctx.fillText(onGround?'On Ground':'In Air',10,90);
+    ctx.fillText('Lives: '+player.lives,10,90);
+    ctx.fillText(onGround?'On Ground':'In Air',10,120);
+
+    if(gameOver){ ctx.fillStyle='red'; ctx.font='40px Arial'; ctx.fillText('Game Over',canvas.width/2-100, canvas.height/2); }
   }
 
-  function gameLoop(){
-    update();
-    draw();
-    game1LoopId = requestAnimationFrame(gameLoop);
-  }
+  function gameLoop(){ update(); draw(); game1LoopId = requestAnimationFrame(gameLoop); }
   gameLoop();
 }
+
+// ----------------- TEST PAYMENT SIMULATION -----------------
+function paySOL(){ if(currentPlayer){ currentPlayer.lives+=5; alert("+5 Leben (Testmode)"); } }
+function payETH(){ restarts+=250; alert("+250 Restarts (Testmode)"); }
 </script>
 
 </body>
