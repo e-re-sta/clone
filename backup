@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OrangeWeb</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #fff7e6;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+  }
+  header {
+    padding: 10px;
+    background-color: orange;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  header button {
+    padding: 5px 15px;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+    border-radius: 4px;
+  }
+  h1 { margin: 20px 0 10px 0; }
+  p { margin: 0 0 20px 0; }
+  .game-buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    max-width: 800px;
+    margin: 0 auto 40px auto;
+  }
+  .game-buttons button {
+    padding: 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    background-color: orange;
+    color: white;
+    transition: 0.3s;
+  }
+  .game-buttons button:hover { background-color: darkorange; }
+  .game-placeholder {
+    display: none;
+    position: relative;
+    padding: 50px;
+    font-size: 24px;
+    background-color: #ffe0b2;
+    min-height: 300px;
+  }
+  .back-button {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    padding: 10px 15px;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+    border-radius: 4px;
+    background-color: orange;
+    color: white;
+  }
+  .pay-buttons button {
+    margin: 5px;
+    padding: 10px 20px;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 4px;
+    border: none;
+    background-color: #f57c00;
+    color: white;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>OrangeWeb</div>
+  <button onclick="location.reload()">Reload</button>
+</header>
+
+<h1>Have fun!</h1>
+<p>
+
+OrangeWeb – Your Gaming World, Directly in the Browser
+
+Discover 12 exciting games you can play instantly – no installation required. Pay securely with Ethereum (MetaMask) or Solana (Sollet) and start your adventure right away. At OrangeWeb, you choose which games to experience – anonymous and secure.
+</p>
+<div class="game-buttons">
+  <button onclick="playGame(1)">Game 1</button>
+  <button onclick="playGame(2)">Game 2</button>
+  <button onclick="playGame(3)">Game 3</button>
+  <button onclick="playGame(4)">Game 4</button>
+  <button onclick="playGame(5)">Game 5</button>
+  <button onclick="playGame(6)">Game 6</button>
+  <button onclick="playGame(7)">Game 7</button>
+  <button onclick="playGame(8)">Game 8</button>
+  <button onclick="playGame(9)">Game 9</button>
+  <button onclick="playGame(10)">Game 10</button>
+  <button onclick="playGame(11)">Game 11</button>
+  <button onclick="playGame(12)">Game 12</button>
+</div>
+
+<div id="gameContainer" class="game-placeholder">
+  <div id="gameContent"></div>
+  <div class="pay-buttons">
+    <button onclick="payEth()">Zahle ETH</button>
+    <button onclick="paySol()">Zahle SOL</button>
+  </div>
+  <button class="back-button" onclick="backToMain()">Back</button>
+</div>
+
+<script>
+  // ==== Wallet-Adressen (einmal setzen) ====
+  const ETH_ADDRESS = "0x1111111111111111111111111111111111111111"; // <- hier ETH-Adresse einfügen
+  const SOL_ADDRESS = "So11111111111111111111111111111111111111111"; // <- hier SOL-Adresse einfügen
+  const ETH_AMOUNT = "0.01"; // ETH zu senden
+  const SOL_AMOUNT = 0.01; // SOL zu senden
+
+  const gameContainer = document.getElementById('gameContainer');
+  const gameContent = document.getElementById('gameContent');
+  const gameButtonsDiv = document.querySelector('.game-buttons');
+
+  function playGame(num) {
+    gameButtonsDiv.style.display = 'none';
+    gameContainer.style.display = 'block';
+    gameContent.textContent = `Spiel ${num} Platzhalter`;
+  }
+
+  function backToMain() {
+    gameContainer.style.display = 'none';
+    gameButtonsDiv.style.display = 'grid';
+  }
+
+  // ==== Ethereum Payment über MetaMask ====
+  async function payEth() {
+    if (typeof window.ethereum === 'undefined') {
+      alert("MetaMask nicht gefunden!");
+      return;
+    }
+    try {
+      const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+      const tx = await ethereum.request({
+        method: 'eth_sendTransaction',
+        params: [{
+          from: accounts[0],
+          to: ETH_ADDRESS,
+          value: (ETH_AMOUNT * 1e18).toString(16), // ETH in wei
+        }],
+      });
+      alert("ETH Zahlung erfolgreich! Tx: " + tx);
+    } catch (err) {
+      console.error(err);
+      alert("ETH Zahlung fehlgeschlagen!");
+    }
+  }
+
+  // ==== Solana Payment über Sollet ====
+  async function paySol() {
+    if (!window.sollet) {
+      alert("Sollet Wallet nicht gefunden!");
+      return;
+    }
+    try {
+      const provider = window.sollet;
+      await provider.connect();
+      const transaction = new window.solanaWeb3.Transaction().add(
+        window.solanaWeb3.SystemProgram.transfer({
+          fromPubkey: provider.publicKey,
+          toPubkey: new window.solanaWeb3.PublicKey(SOL_ADDRESS),
+          lamports: SOL_AMOUNT * 1e9, // SOL zu Lamports
+        })
+      );
+      const signature = await provider.sendTransaction(transaction, window.solanaWeb3.Connection);
+      alert("SOL Zahlung erfolgreich! Signature: " + signature);
+    } catch (err) {
+      console.error(err);
+      alert("SOL Zahlung fehlgeschlagen!");
+    }
+  }
+</script>
+
+<script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
+<script src="https://www.sollet.io/embed.js"></script>
+
+</body>
+</html>
