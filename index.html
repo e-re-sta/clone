@@ -91,11 +91,7 @@
   let currentPage = 1;
 
   function walletAddress() {
-    // Einmal Wallet-Adresse für ETH/SOL einfügen
-    return {
-      eth: "ETH_ADDRESS_HERE",
-      sol: "SOL_ADDRESS_HERE"
-    };
+    return { eth: "ETH_ADDRESS_HERE", sol: "SOL_ADDRESS_HERE" };
   }
 
   function renderMain() {
@@ -131,7 +127,6 @@
     const main = document.getElementById('main');
     main.innerHTML = '';
 
-    // Game-Content
     const gameDiv = document.createElement('div');
     gameDiv.innerHTML = `
       <h2>Game ${(currentPage-1)*gamesPerPage + gameNumber}</h2>
@@ -142,10 +137,8 @@
     `;
     main.appendChild(gameDiv);
 
-    // Back button
     document.getElementById('back-main').addEventListener('click', renderMain);
 
-    // Payment placeholders
     const wallets = walletAddress();
     document.getElementById('pay-eth').addEventListener('click', ()=>{
       alert(`ETH payment to ${wallets.eth} placeholder`);
