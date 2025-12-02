@@ -128,11 +128,69 @@ Discover 12 exciting games you can play instantly – no installation required. 
   const gameContent = document.getElementById('gameContent');
   const gameButtonsDiv = document.querySelector('.game-buttons');
 
-  function playGame(num) {
-    gameButtonsDiv.style.display = 'none';
-    gameContainer.style.display = 'block';
+ function playGame(num) {
+  gameButtonsDiv.style.display = 'none';
+  gameContainer.style.display = 'block';
+  gameContent.innerHTML = ''; // vorherigen Inhalt löschen
+
+  if(num === 1) {
+    // Game 1 Platzhalter: Canvas wird nach Zahlung erzeugt
+    const message = document.createElement('p');
+    message.textContent = "Bitte zahle ETH oder SOL, um Game 1 zu starten.";
+    gameContent.appendChild(message);
+
+    // ETH-Zahlung Button
+    const ethBtn = document.createElement('button');
+    ethBtn.textContent = "Zahle ETH";
+    ethBtn.onclick = async () => {
+      const success = await payEth(); // payEth muss true bei erfolgreicher Zahlung zurückgeben
+      if(success) startGame1();
+    };
+
+    // SOL-Zahlung Button
+    const solBtn = document.createElement('button');
+    solBtn.textContent = "Zahle SOL";
+    solBtn.onclick = async () => {
+      const success = await paySol(); // paySol muss true zurückgeben
+      if(success) startGame1();
+    };
+
+    gameContent.appendChild(ethBtn);
+    gameContent.appendChild(solBtn);
+  } else {
     gameContent.textContent = `Spiel ${num} Platzhalter`;
   }
+}
+
+// Game 1 starten (Canvas)
+function startGame1() {
+  gameContent.innerHTML = ''; // Zahlungsbuttons entfernen
+
+  const canvas = document.createElement('canvas');
+  canvas.id = 'game1Canvas';
+  canvas.width = 600;
+  canvas.height = 400;
+  canvas.style.backgroundColor = '#ffcc80';
+  gameContent.appendChild(canvas);
+
+  const ctx = canvas.getContext("2d");
+  let x = 50, y = 200, dx = 3, radius = 30;
+
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.fillStyle = "orange";
+    ctx.fill();
+    ctx.closePath();
+
+    x += dx;
+    if(x + radius > canvas.width || x - radius < 0) dx = -dx;
+
+    requestAnimationFrame(animate);
+  }
+  animate();
+} 
 
   function backToMain() {
     gameContainer.style.display = 'none';
