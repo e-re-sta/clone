@@ -24,35 +24,12 @@
     background-color: var(--bg-dark);
     color: var(--text-dark);
   }
-  header {
-    padding: 1rem;
-    background-color: #333;
-    color: #fff;
-    text-align:center;
-    cursor:pointer;
-  }
+  header { padding: 1rem; background-color: #333; color: #fff; text-align:center; cursor:pointer; }
   #main { padding: 1rem; }
-  .games-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
-    margin-bottom: 1rem;
-  }
-  button {
-    padding: 1rem;
-    background-color: var(--button-bg);
-    border:none;
-    color:#fff;
-    cursor:pointer;
-    transition: background-color 0.2s;
-  }
+  button { padding: 1rem; background-color: var(--button-bg); border:none; color:#fff; cursor:pointer; transition: background-color 0.2s; margin:0.2rem;}
   button:hover { background-color: var(--button-hover); }
-  #nav-buttons { display:flex; justify-content: space-between; margin-top: 1rem; }
-  #dark-toggle {
-    position:fixed; top:1rem; right:1rem;
-    padding:0.5rem 1rem; cursor:pointer;
-    background-color:#555; color:#fff; border:none;
-  }
+  #dark-toggle { position:fixed; top:1rem; right:1rem; padding:0.5rem 1rem; cursor:pointer; background-color:#555; color:#fff; border:none; }
+  #game-info { margin-bottom:1rem; }
 </style>
 </head>
 <body>
@@ -60,9 +37,10 @@
 <button id="dark-toggle">Toggle Darkmode</button>
 <div id="main"></div>
 
-<!-- WalletConnect & Solana -->
-<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider/dist/umd/index.min.js"></script>
+<!-- Wallet Libraries -->
+<script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.7.8/dist/umd/index.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+<script src="https://unpkg.com/@solana/web3.js@1.74.0/lib/index.iife.js"></script>
 
 <script>
   // Darkmode persist
@@ -77,116 +55,130 @@
   // Reload header
   document.getElementById('reload-header').addEventListener('click', ()=> location.reload());
 
-  const totalPages = 5;
-  const gamesPerPage = 12;
-  let currentPage = 1;
-
-  // Wallet placeholder: nur einmal ändern
-  const wallets = {
-    eth: "ETH_ADDRESS_HERE",
-    sol: "SOL_ADDRESS_HERE"
-  };
-
-  // Level & Leben Tracking
-  let levelUnlocked = JSON.parse(localStorage.getItem('levelUnlocked')) || false;
-  let playerLives = parseInt(localStorage.getItem('playerLives')) || 6;
-
-  async function payETH() {
-    try {
-      const provider = new WalletConnectProvider.default({
-        rpc: { 1: "https://mainnet.infura.io/v3/YOUR_INFURA_KEY" }
-      });
-      await provider.enable();
-      const web3Provider = new ethers.providers.Web3Provider(provider);
-      const signer = web3Provider.getSigner();
-      const tx = await signer.sendTransaction({
-        to: wallets.eth,
-        value: ethers.utils.parseEther("0.000001")
-      });
-      await tx.wait();
-      levelUnlocked = true;
-      localStorage.setItem('levelUnlocked', true);
-      alert("Level 8 unlocked!");
-    } catch(e) {
-      console.error(e);
-      alert("ETH Payment failed or cancelled.");
-    }
-  }
-
-  async function paySOL() {
-    try {
-      if (!window.solana || !window.solana.isPhantom) throw "Phantom Wallet not found";
-      const resp = await window.solana.connect();
-      const transaction = new window.solana.Transaction().add(
-        window.solana.SystemProgram.transfer({
-          fromPubkey: resp.publicKey,
-          toPubkey: new window.solana.PublicKey(wallets.sol),
-          lamports: 0.5 * 1e9 // 0.5 SOL
-        })
-      );
-      const { signature } = await window.solana.signAndSendTransaction(transaction);
-      await window.solana.confirmTransaction(signature);
-      playerLives += 6;
-      localStorage.setItem('playerLives', playerLives);
-      document.getElementById('lives-count').textContent = playerLives;
-      alert("6 Lives added!");
-    } catch(e) {
-      console.error(e);
-      alert("SOL Payment failed or cancelled.");
-    }
-  }
+  // Wallet addresses (einmalig)
+  const wallets = { eth:"ETH_ADDRESS_HERE", sol:"SOL_ADDRESS_HERE" };
 
   function renderMain() {
     const main = document.getElementById('main');
     main.innerHTML = '';
-    const grid = document.createElement('div');
-    grid.className = 'games-grid';
-    for(let i=1; i<=gamesPerPage; i++){
-      const btn = document.createElement('button');
-      btn.textContent = `Game ${(currentPage-1)*gamesPerPage + i}`;
-      btn.addEventListener('click', ()=> loadGame(i));
-      grid.appendChild(btn);
-    }
-    main.appendChild(grid);
-
-    const nav = document.createElement('div');
-    nav.id = 'nav-buttons';
-    const backBtn = document.createElement('button');
-    backBtn.textContent = 'Back';
-    backBtn.disabled = currentPage===1;
-    backBtn.addEventListener('click', ()=> {currentPage--; renderMain();});
-    const nextBtn = document.createElement('button');
-    nextBtn.textContent = 'Next';
-    nextBtn.disabled = currentPage===totalPages;
-    nextBtn.addEventListener('click', ()=> {currentPage++; renderMain();});
-    nav.appendChild(backBtn);
-    nav.appendChild(nextBtn);
-    main.appendChild(nav);
+    const btn = document.createElement('button');
+    btn.textContent = 'Game 1';
+    btn.addEventListener('click', loadGame);
+    main.appendChild(btn);
   }
 
-  function loadGame(gameNumber){
+  function loadGame() {
     const main = document.getElementById('main');
     main.innerHTML = '';
+    
+    // Game variables
+    const canvasSize = 400;
+    let x=50, y=50, size=30;
+    let dx=0, dy=0;
+    let level=1, points=0, lives=3;
+    const obstacles = [];
 
+    // Create canvas and info
     const gameDiv = document.createElement('div');
     gameDiv.innerHTML = `
-      <h2>Game ${(currentPage-1)*gamesPerPage + gameNumber}</h2>
-      <p>Game content goes here...</p>
-      <button id="back-main" style="position:fixed; bottom:1rem; left:1rem;">⬅ Back</button>
+      <div id="game-info">Level: ${level} | Points: ${points} | Lives: ${lives}</div>
+      <canvas id="gameCanvas" width="${canvasSize}" height="${canvasSize}" style="border:1px solid #000;"></canvas>
       <div style="margin-top:1rem;">
-        ${!levelUnlocked && (gameNumber >= 8) ? '<button id="pay-eth">Unlock Level 8 (0.000001 ETH)</button>' : ''}
-        <button id="pay-sol">Buy 6 Lives (0.5 SOL)</button>
+        <button id="pay-eth">Pay 0.000001 ETH to continue</button>
+        <button id="pay-sol">Pay 0.50 USD in SOL for 6 lives</button>
       </div>
-      <p>Lives: <span id="lives-count">${playerLives}</span></p>
+      <button id="back-main" style="position:fixed; bottom:1rem; left:1rem;">⬅ Back</button>
     `;
     main.appendChild(gameDiv);
 
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Back button
     document.getElementById('back-main').addEventListener('click', renderMain);
 
-    if(document.getElementById('pay-eth')){
-      document.getElementById('pay-eth').addEventListener('click', payETH);
+    // Payment placeholders
+    document.getElementById('pay-eth').addEventListener('click', ()=>{
+      alert(`ETH payment to ${wallets.eth} placeholder`);
+      level++; updateInfo();
+    });
+    document.getElementById('pay-sol').addEventListener('click', ()=>{
+      alert(`SOL payment to ${wallets.sol} placeholder`);
+      lives+=6; updateInfo();
+    });
+
+    // Info update
+    function updateInfo() {
+      document.getElementById('game-info').textContent = `Level: ${level} | Points: ${points} | Lives: ${lives}`;
     }
-    document.getElementById('pay-sol').addEventListener('click', paySOL);
+
+    // Generate obstacles for each level
+    function generateObstacles() {
+      obstacles.length=0;
+      for(let i=0;i<level+2;i++){
+        obstacles.push({x:Math.random()*(canvasSize-20), y:Math.random()*(canvasSize-20), size:20});
+      }
+    }
+
+    generateObstacles();
+
+    // Keyboard controls
+    const keys = {};
+    document.addEventListener('keydown', (e)=>keys[e.key]=true);
+    document.addEventListener('keyup', (e)=>keys[e.key]=false);
+
+    function gameLoop(){
+      ctx.clearRect(0,0,canvasSize,canvasSize);
+      dx=0; dy=0;
+      if(keys['ArrowUp']) dy=-2;
+      if(keys['ArrowDown']) dy=2;
+      if(keys['ArrowLeft']) dx=-2;
+      if(keys['ArrowRight']) dx=2;
+
+      x+=dx; y+=dy;
+      // Boundaries
+      if(x<0)x=0; if(y<0)y=0;
+      if(x+size>canvasSize)x=canvasSize-size;
+      if(y+size>canvasSize)y=canvasSize-size;
+
+      // Draw player
+      ctx.fillStyle='red';
+      ctx.fillRect(x,y,size,size);
+
+      // Draw obstacles
+      ctx.fillStyle='black';
+      obstacles.forEach(ob=>{
+        ctx.fillRect(ob.x, ob.y, ob.size, ob.size);
+        // Collision
+        if(x<ob.x+ob.size && x+size>ob.x && y<ob.y+ob.size && y+size>ob.y){
+          lives--;
+          updateInfo();
+          x=50; y=50; // reset position
+          if(lives<=0){
+            alert('Game Over');
+            renderMain();
+            return;
+          }
+        }
+      });
+
+      // Level up
+      if(points >= level*5){
+        level++;
+        points=0;
+        generateObstacles();
+        updateInfo();
+        if(level>=8){
+          alert('Pay 0.000001 ETH to continue');
+          // Require ETH payment
+        }
+      }
+
+      points++;
+      updateInfo();
+      requestAnimationFrame(gameLoop);
+    }
+    gameLoop();
   }
 
   renderMain();
