@@ -1,194 +1,190 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Clone2 Game Hub</title>
+<title>OrangeWeb</title>
 <style>
-  :root {
-    --bg-color-light: #f0f0f0;
-    --bg-color-dark: #121212;
-    --text-color-light: #000;
-    --text-color-dark: #fff;
-    --button-bg: #007bff;
-    --button-hover: #0056b3;
-  }
   body {
-    margin:0;
     font-family: Arial, sans-serif;
-    background-color: var(--bg-color-light);
-    color: var(--text-color-light);
-    transition: background-color 0.3s, color 0.3s;
-  }
-  body.dark {
-    background-color: var(--bg-color-dark);
-    color: var(--text-color-dark);
+    background-color: #fff7e6;
+    margin: 0;
+    padding: 0;
+    text-align: center;
   }
   header {
-    padding: 1rem;
-    background-color: #333;
-    color: #fff;
-    text-align:center;
-    cursor:pointer;
-  }
-  #main {
-    padding: 1rem;
-  }
-  .games-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 1rem;
-    margin-bottom: 1rem;
-  }
-  button {
-    padding: 1rem;
-    background-color: var(--button-bg);
-    border:none;
-    color:#fff;
-    cursor:pointer;
-    transition: background-color 0.2s;
-    font-size: 0.9rem;
-  }
-  button:hover {
-    background-color: var(--button-hover);
-  }
-  #nav-buttons {
-    display:flex;
+    padding: 10px;
+    background-color: orange;
+    color: white;
+    display: flex;
     justify-content: space-between;
-    margin-top: 1rem;
+    align-items: center;
   }
-  #dark-toggle {
-    position:fixed;
-    top:1rem;
-    right:1rem;
-    padding:0.5rem 1rem;
-    cursor:pointer;
-    background-color:#555;
-    color:#fff;
-    border:none;
+  header button {
+    padding: 5px 15px;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+    border-radius: 4px;
   }
-  #back-main {
-    position:fixed;
-    bottom:1rem;
-    left:1rem;
-    padding:0.5rem 1rem;
-    cursor:pointer;
-    background-color:#555;
-    color:#fff;
-    border:none;
+  h1 { margin: 20px 0 10px 0; }
+  p { margin: 0 0 20px 0; }
+  .game-buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    max-width: 800px;
+    margin: 0 auto 40px auto;
+  }
+  .game-buttons button {
+    padding: 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    background-color: orange;
+    color: white;
+    transition: 0.3s;
+  }
+  .game-buttons button:hover { background-color: darkorange; }
+  .game-placeholder {
+    display: none;
+    position: relative;
+    padding: 50px;
+    font-size: 24px;
+    background-color: #ffe0b2;
+    min-height: 300px;
+  }
+  .back-button {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    padding: 10px 15px;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+    border-radius: 4px;
+    background-color: orange;
+    color: white;
+  }
+  .pay-buttons button {
+    margin: 5px;
+    padding: 10px 20px;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 4px;
+    border: none;
+    background-color: #f57c00;
+    color: white;
   }
 </style>
 </head>
 <body>
-<header id="reload-header">clone2</header>
-<button id="dark-toggle">Toggle Darkmode</button>
-<div id="main"></div>
+
+<header>
+  <div>OrangeWeb</div>
+  <button onclick="location.reload()">Reload</button>
+</header>
+
+<h1>Überschrift</h1>
+<p>Hier entsteht selfmade wie immer</p>
+
+<div class="game-buttons">
+  <button onclick="playGame(1)">Game 1</button>
+  <button onclick="playGame(2)">Game 2</button>
+  <button onclick="playGame(3)">Game 3</button>
+  <button onclick="playGame(4)">Game 4</button>
+  <button onclick="playGame(5)">Game 5</button>
+  <button onclick="playGame(6)">Game 6</button>
+  <button onclick="playGame(7)">Game 7</button>
+  <button onclick="playGame(8)">Game 8</button>
+  <button onclick="playGame(9)">Game 9</button>
+  <button onclick="playGame(10)">Game 10</button>
+  <button onclick="playGame(11)">Game 11</button>
+  <button onclick="playGame(12)">Game 12</button>
+</div>
+
+<div id="gameContainer" class="game-placeholder">
+  <div id="gameContent"></div>
+  <div class="pay-buttons">
+    <button onclick="payEth()">Zahle ETH</button>
+    <button onclick="paySol()">Zahle SOL</button>
+  </div>
+  <button class="back-button" onclick="backToMain()">Back</button>
+</div>
 
 <script>
-  // Darkmode persist
-  let dark = localStorage.getItem('dark') === 'true';
-  if(dark) document.body.classList.add('dark');
-  document.getElementById('dark-toggle').addEventListener('click', () => {
-    document.body.classList.toggle('dark');
-    dark = document.body.classList.contains('dark');
-    localStorage.setItem('dark', dark);
-  });
+  // ==== Wallet-Adressen (einmal setzen) ====
+  const ETH_ADDRESS = "0x1111111111111111111111111111111111111111"; // <- hier ETH-Adresse einfügen
+  const SOL_ADDRESS = "So11111111111111111111111111111111111111111"; // <- hier SOL-Adresse einfügen
+  const ETH_AMOUNT = "0.01"; // ETH zu senden
+  const SOL_AMOUNT = 0.01; // SOL zu senden
 
-  // Reload header
-  document.getElementById('reload-header').addEventListener('click', ()=> location.reload());
+  const gameContainer = document.getElementById('gameContainer');
+  const gameContent = document.getElementById('gameContent');
+  const gameButtonsDiv = document.querySelector('.game-buttons');
 
-  const gamesPerPage = 12;
-  let currentPage = 1;
-  const totalGames = 12; // für Clone2 Mainpage
-
-  function walletAddress() {
-    return {
-      eth: "ETH_ADDRESS_HERE",
-      sol: "SOL_ADDRESS_HERE"
-    };
+  function playGame(num) {
+    gameButtonsDiv.style.display = 'none';
+    gameContainer.style.display = 'block';
+    gameContent.textContent = `Spiel ${num} Platzhalter`;
   }
 
-  function renderMain() {
-    const main = document.getElementById('main');
-    main.innerHTML = '';
-    const grid = document.createElement('div');
-    grid.className = 'games-grid';
+  function backToMain() {
+    gameContainer.style.display = 'none';
+    gameButtonsDiv.style.display = 'grid';
+  }
 
-    for(let i=1; i<=totalGames; i++){
-      const btn = document.createElement('button');
-      btn.textContent = `Game ${i}`;
-      btn.addEventListener('click', ()=> loadGame(i));
-      grid.appendChild(btn);
+  // ==== Ethereum Payment über MetaMask ====
+  async function payEth() {
+    if (typeof window.ethereum === 'undefined') {
+      alert("MetaMask nicht gefunden!");
+      return;
     }
-    main.appendChild(grid);
-
-    // Navigation placeholder (kann erweitert werden)
-    const nav = document.createElement('div');
-    nav.id = 'nav-buttons';
-    main.appendChild(nav);
-  }
-
-  function loadGame(gameNumber){
-    const main = document.getElementById('main');
-    main.innerHTML = '';
-
-    const wallets = walletAddress();
-    let lives = 6;
-    let level = 1;
-    const maxLevel = 10;
-
-    const gameDiv = document.createElement('div');
-    main.appendChild(gameDiv);
-
-    function renderGame(){
-      gameDiv.innerHTML = `
-        <h2>Clone2 - Game ${gameNumber} - Level ${level}</h2>
-        <p>Lives: ${lives}</p>
-        <p>Game content placeholder...</p>
-        <button id="next-level">Next Level</button>
-        <button id="pay-eth">Pay 0.000001 ETH for Level 8</button>
-        <button id="pay-sol">Pay 0.50 SOL for 6 Lives</button>
-        <button id="back-main">⬅ Back</button>
-      `;
-
-      // Next Level
-      document.getElementById('next-level').addEventListener('click', ()=>{
-        if(level === 7){
-          alert('Level 8 requires ETH payment!');
-        } else if(level < maxLevel){
-          level++;
-          renderGame();
-        } else {
-          alert('Reached max level');
-        }
+    try {
+      const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+      const tx = await ethereum.request({
+        method: 'eth_sendTransaction',
+        params: [{
+          from: accounts[0],
+          to: ETH_ADDRESS,
+          value: (ETH_AMOUNT * 1e18).toString(16), // ETH in wei
+        }],
       });
-
-      // ETH Payment
-      document.getElementById('pay-eth').addEventListener('click', ()=>{
-        if(level === 8){
-          alert(`ETH payment to ${wallets.eth} placeholder successful! Level unlocked.`);
-          level++;
-          renderGame();
-        } else {
-          alert('ETH payment not required at this level.');
-        }
-      });
-
-      // SOL Payment
-      document.getElementById('pay-sol').addEventListener('click', ()=>{
-        alert(`SOL payment to ${wallets.sol} placeholder successful! Lives replenished.`);
-        lives = 6;
-        renderGame();
-      });
-
-      // Back to main
-      document.getElementById('back-main').addEventListener('click', renderMain);
+      alert("ETH Zahlung erfolgreich! Tx: " + tx);
+    } catch (err) {
+      console.error(err);
+      alert("ETH Zahlung fehlgeschlagen!");
     }
-
-    renderGame();
   }
 
-  renderMain();
+  // ==== Solana Payment über Sollet ====
+  async function paySol() {
+    if (!window.sollet) {
+      alert("Sollet Wallet nicht gefunden!");
+      return;
+    }
+    try {
+      const provider = window.sollet;
+      await provider.connect();
+      const transaction = new window.solanaWeb3.Transaction().add(
+        window.solanaWeb3.SystemProgram.transfer({
+          fromPubkey: provider.publicKey,
+          toPubkey: new window.solanaWeb3.PublicKey(SOL_ADDRESS),
+          lamports: SOL_AMOUNT * 1e9, // SOL zu Lamports
+        })
+      );
+      const signature = await provider.sendTransaction(transaction, window.solanaWeb3.Connection);
+      alert("SOL Zahlung erfolgreich! Signature: " + signature);
+    } catch (err) {
+      console.error(err);
+      alert("SOL Zahlung fehlgeschlagen!");
+    }
+  }
 </script>
+
+<script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
+<script src="https://www.sollet.io/embed.js"></script>
+
 </body>
 </html>
