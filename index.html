@@ -22,7 +22,17 @@
   button:hover { background-color:var(--button-hover); }
   #nav-buttons { display:flex; justify-content:space-between; margin-top:1rem; }
   #dark-toggle { position:fixed; top:1rem; right:1rem; padding:0.5rem 1rem; cursor:pointer; background-color:#555; color:#fff; border:none; }
+  #back-main { position:fixed; bottom:1rem; left:1rem; padding:0.5rem 1rem; cursor:pointer; }
+  #pay-eth, #pay-sol { margin-right:0.5rem; }
 </style>
+<!-- ETH WalletConnect -->
+<script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/web3@1.9.2/dist/web3.min.js"></script>
+<!-- Solana Wallet Adapter -->
+<script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
+<script src="https://unpkg.com/@solana/wallet-adapter-base@latest/lib/index.iife.js"></script>
+<script src="https://unpkg.com/@solana/wallet-adapter-wallets@latest/lib/index.iife.js"></script>
+<script src="https://unpkg.com/@solana/wallet-adapter-phantom@latest/lib/index.iife.js"></script>
 </head>
 <body>
 <header id="reload-header">clone</header>
@@ -30,90 +40,112 @@
 <div id="main"></div>
 
 <script>
-let dark = localStorage.getItem('dark')==='true';
-if(dark) document.body.classList.add('dark');
-document.getElementById('dark-toggle').addEventListener('click',()=>{
-  document.body.classList.toggle('dark');
-  dark=document.body.classList.contains('dark');
-  localStorage.setItem('dark',dark);
-});
+  // Persist Darkmode
+  let dark = localStorage.getItem('dark')==='true';
+  if(dark) document.body.classList.add('dark');
+  document.getElementById('dark-toggle').addEventListener('click',()=>{
+    document.body.classList.toggle('dark');
+    dark = document.body.classList.contains('dark');
+    localStorage.setItem('dark',dark);
+  });
 
-document.getElementById('reload-header').addEventListener('click',()=>location.reload());
+  // Reload page
+  document.getElementById('reload-header').addEventListener('click', ()=> location.reload());
 
-const totalPages=5;
-const gamesPerPage=12;
-let currentPage=1;
-let level = parseInt(localStorage.getItem('level')) || 1;
-let lives = parseInt(localStorage.getItem('lives')) || 3;
+  const totalPages = 5;
+  const gamesPerPage = 12;
+  let currentPage = 1;
 
-function walletAddress(){ return {eth:"ETH_ADDRESS_HERE", sol:"SOL_ADDRESS_HERE"}; }
-
-function renderMain(){
-  const main=document.getElementById('main');
-  main.innerHTML='';
-  const grid=document.createElement('div');
-  grid.className='games-grid';
-  for(let i=1;i<=gamesPerPage;i++){
-    const btn=document.createElement('button');
-    btn.textContent=`Game ${(currentPage-1)*gamesPerPage + i}`;
-    btn.addEventListener('click',()=>loadGame(i));
-    grid.appendChild(btn);
+  function walletAddress(){
+    return { eth: "ETH_ADDRESS_HERE", sol: "SOL_ADDRESS_HERE" };
   }
-  main.appendChild(grid);
 
-  const nav=document.createElement('div');
-  nav.id='nav-buttons';
-  const backBtn=document.createElement('button');
-  backBtn.textContent='Back';
-  backBtn.disabled=currentPage===1;
-  backBtn.addEventListener('click',()=>{currentPage--; renderMain();});
-  const nextBtn=document.createElement('button');
-  nextBtn.textContent='Next';
-  nextBtn.disabled=currentPage===totalPages;
-  nextBtn.addEventListener('click',()=>{currentPage++; renderMain();});
-  nav.appendChild(backBtn);
-  nav.appendChild(nextBtn);
-  main.appendChild(nav);
-}
+  async function payETH(amount){
+    const provider = new WalletConnectProvider.default({ rpc: { 1: "https://mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID" } });
+    await provider.enable();
+    const web3 = new Web3(provider);
+    const accounts = await web3.eth.getAccounts();
+    const tx = await web3.eth.sendTransaction({
+      from: accounts[0],
+      to: walletAddress().eth,
+      value: web3.utils.toWei(amount.toString(), 'ether')
+    });
+    alert('ETH Payment successful! TX: ' + tx.transactionHash);
+    await provider.disconnect();
+  }
 
-function loadGame(gameNumber){
-  const main=document.getElementById('main');
-  main.innerHTML='';
-  const gameDiv=document.createElement('div');
-  gameDiv.innerHTML=`
-    <h2>Game ${(currentPage-1)*gamesPerPage + gameNumber}</h2>
-    <p>Level: ${level}, Lives: ${lives}</p>
-    <p>Game content goes here...</p>
-    <button id="back-main" style="position:fixed; bottom:1rem; left:1rem;">⬅ Back</button>
-    <button id="pay-eth">Pay 0.000001 ETH for Level 8+</button>
-    <button id="pay-sol">Pay 0.50 USD SOL for 6 Lives</button>
-  `;
-  main.appendChild(gameDiv);
-
-  document.getElementById('back-main').addEventListener('click', renderMain);
-
-  const wallets=walletAddress();
-
-  document.getElementById('pay-eth').addEventListener('click',()=>{
-    if(level<8){
-      alert("You don't need to pay yet. Keep playing.");
+  async function paySOL(amount){
+    // Phantom wallet
+    const solanaProvider = window.solana;
+    if(!solanaProvider || !solanaProvider.isPhantom){
+      alert("Phantom wallet not found!");
       return;
     }
-    alert(`Please pay 0.000001 ETH to ${wallets.eth} placeholder`);
-    level++;
-    localStorage.setItem('level',level);
-    alert(`Level unlocked! Current Level: ${level}`);
-  });
+    await solanaProvider.connect();
+    const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('mainnet-beta'));
+    const fromPubkey = solanaProvider.publicKey;
+    const transaction = new solanaWeb3.Transaction().add(
+      solanaWeb3.SystemProgram.transfer({
+        fromPubkey,
+        toPubkey: new solanaWeb3.PublicKey(walletAddress().sol),
+        lamports: amount * 1000000000 // 1 SOL = 1e9 lamports
+      })
+    );
+    const { signature } = await solanaProvider.signAndSendTransaction(transaction);
+    await connection.confirmTransaction(signature);
+    alert('SOL Payment successful! Signature: ' + signature);
+  }
 
-  document.getElementById('pay-sol').addEventListener('click',()=>{
-    alert(`Please pay 0.50 USD in SOL to ${wallets.sol} placeholder`);
-    lives+=6;
-    localStorage.setItem('lives',lives);
-    alert(`You bought 6 lives! Current Lives: ${lives}`);
-  });
-}
+  function renderMain(){
+    const main = document.getElementById('main');
+    main.innerHTML = '';
 
-renderMain();
+    const grid = document.createElement('div');
+    grid.className='games-grid';
+    for(let i=1;i<=gamesPerPage;i++){
+      const btn=document.createElement('button');
+      btn.textContent=`Game ${(currentPage-1)*gamesPerPage + i}`;
+      btn.addEventListener('click',()=>loadGame(i));
+      grid.appendChild(btn);
+    }
+    main.appendChild(grid);
+
+    const nav = document.createElement('div');
+    nav.id='nav-buttons';
+    const backBtn=document.createElement('button');
+    backBtn.textContent='Back';
+    backBtn.disabled=currentPage===1;
+    backBtn.addEventListener('click',()=>{currentPage--; renderMain();});
+    const nextBtn=document.createElement('button');
+    nextBtn.textContent='Next';
+    nextBtn.disabled=currentPage===totalPages;
+    nextBtn.addEventListener('click',()=>{currentPage++; renderMain();});
+    nav.appendChild(backBtn);
+    nav.appendChild(nextBtn);
+    main.appendChild(nav);
+  }
+
+  function loadGame(gameNumber){
+    const main = document.getElementById('main');
+    main.innerHTML='';
+
+    const gameDiv=document.createElement('div');
+    gameDiv.innerHTML=`
+      <h2>Game ${(currentPage-1)*gamesPerPage + gameNumber}</h2>
+      <p>Game content placeholder for payment integration...</p>
+      <button id="back-main">⬅ Back</button>
+      <button id="pay-eth">Pay 0.000001 ETH (unlock Level 8)</button>
+      <button id="pay-sol">Pay 0.50 SOL (6 lives)</button>
+    `;
+    main.appendChild(gameDiv);
+
+    document.getElementById('back-main').addEventListener('click', renderMain);
+
+    document.getElementById('pay-eth').addEventListener('click',()=> payETH(0.000001));
+    document.getElementById('pay-sol').addEventListener('click',()=> paySOL(0.5));
+  }
+
+  renderMain();
 </script>
 </body>
 </html>
