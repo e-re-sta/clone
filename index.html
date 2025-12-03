@@ -2,223 +2,200 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OrangeWeb</title>
 <style>
-    body {
-        background:#222;
-        color:#fff;
-        font-family:sans-serif;
-        margin:0;
-        text-align:center;
-    }
-    h1{
-        margin:20px 0;
-    }
-    .gameButton{
-        background:orange;
-        color:black;
-        padding:15px 25px;
-        margin:10px;
-        border:none;
-        border-radius:6px;
-        cursor:pointer;
-        font-size:18px;
-        font-weight:bold;
-    }
-    #agentBirdWrapper{
-        display:none;
-        position:relative;
-        margin:auto;
-        margin-top:20px;
-        width:800px;
-        height:500px;
-        border:2px solid #444;
-        border-radius:8px;
-        overflow:hidden;
-        background:black;
-    }
-    #agentBirdCanvas{
-        width:100%;
-        height:100%;
-    }
-    #scoreDisplay{
-        position:absolute;
-        top:10px;
-        left:10px;
-        color:white;
-        font-size:22px;
-        font-weight:bold;
-    }
-    #backBtn{
-        position:absolute;
-        top:10px;
-        right:10px;
-        padding:10px 20px;
-        background:red;
-        color:white;
-        border:none;
-        border-radius:6px;
-        cursor:pointer;
-        font-size:16px;
-    }
+  body { font-family: Arial, sans-serif; text-align: center; background: #f0f0f0; margin:0; padding:0; }
+  header { background: orange; color: white; padding: 10px; font-size: 24px; }
+  #gameContainer { margin: 20px auto; max-width: 800px; min-height: 500px; background: #fff; border: 2px solid #ccc; position: relative; }
+  .btn { margin:5px; padding:10px 15px; font-size:16px; cursor:pointer; border:none; border-radius:5px; background:orange; color:white; }
+  .backBtn { position:absolute; bottom:10px; left:10px; padding:5px 10px; font-size:14px; background:red; color:white; }
 </style>
 </head>
 <body>
 
-<h1>OrangeWeb</h1>
+<header>OrangeWeb</header>
 
-<button class="gameButton" onclick="openAgentBird()">
-    AgentBird – Fly & Shoot Game
-</button>
+<h2>Überschrift</h2>
+<p>Hier entsteht selfmade wie immer</p>
 
-<!-- GAME WRAPPER -->
-<div id="agentBirdWrapper">
-    <canvas id="agentBirdCanvas" width="800" height="500"></canvas>
-    <div id="scoreDisplay">Score: 0</div>
-    <button id="backBtn" onclick="backToMain()">Back</button>
+<button class="btn" onclick="location.reload()">Reload</button>
+
+<div>
+  <button class="btn" onclick="startAgentBird(document.getElementById('gameContainer'))">Game 1</button>
+  <button class="btn" onclick="alert('Game 2 coming soon')">Game 2</button>
+  <button class="btn" onclick="alert('Game 3 coming soon')">Game 3</button>
+  <button class="btn" onclick="alert('Game 4 coming soon')">Game 4</button>
+  <button class="btn" onclick="alert('Game 5 coming soon')">Game 5</button>
+  <button class="btn" onclick="alert('Game 6 coming soon')">Game 6</button>
+  <button class="btn" onclick="alert('Game 7 coming soon')">Game 7</button>
+  <button class="btn" onclick="alert('Game 8 coming soon')">Game 8</button>
+  <button class="btn" onclick="alert('Game 9 coming soon')">Game 9</button>
+  <button class="btn" onclick="alert('Game 10 coming soon')">Game 10</button>
+  <button class="btn" onclick="alert('Game 11 coming soon')">Game 11</button>
+  <button class="btn" onclick="alert('Game 12 coming soon')">Game 12</button>
 </div>
 
+<div id="gameContainer"></div>
+
+<!-- ----------------- AGENTBIRD SCRIPT ----------------- -->
 <script>
-// === GLOBALS ===
-const wrapper = document.getElementById("agentBirdWrapper");
-const canvas = document.getElementById("agentBirdCanvas");
-const ctx = canvas.getContext("2d");
-const scoreDisplay = document.getElementById("scoreDisplay");
-let player, bullets, enemies, score, shootCooldown, gameOn, loopId;
+let game1LoopId = null;
 
-// === INPUT ===
-canvas.addEventListener("mousemove", e => {
-    if(!gameOn) return;
-    const rect = canvas.getBoundingClientRect();
-    player.y = e.clientY - rect.top - player.height/2;
-});
-canvas.addEventListener("touchmove", e => {
-    if(!gameOn) return;
-    const rect = canvas.getBoundingClientRect();
-    player.y = e.touches[0].clientY - rect.top - player.height/2;
-    e.preventDefault();
-});
-canvas.addEventListener("click", shoot);
+function startAgentBird(container) {
+  // Clear vorheriges Spiel
+  container.innerHTML = '';
+  if(game1LoopId) cancelAnimationFrame(game1LoopId);
 
-function shoot(){
-    if(!gameOn) return;
+  // Canvas erstellen
+  const canvas = document.createElement('canvas');
+  canvas.width = 800;
+  canvas.height = 500;
+  canvas.style.backgroundColor = '#87CEEB';
+  container.appendChild(canvas);
+  const ctx = canvas.getContext('2d');
+
+  // Back Button
+  const backBtn = document.createElement('button');
+  backBtn.className = 'backBtn';
+  backBtn.innerText = 'Back';
+  backBtn.onclick = () => { container.innerHTML = ''; cancelAnimationFrame(game1LoopId); game1LoopId = null; };
+  container.appendChild(backBtn);
+
+  // Spieler
+  const player = { x:100, y:250, width:40, height:30, color:'orange', shield:0 };
+  let score = 0;
+  let onGround = false;
+
+  const groundY = canvas.height - 50;
+  const geese = [], bullets = [], planes = [], shots = [], powerups = [], particles = [];
+  let shootCooldown = 0;
+
+  // Steuerung
+  canvas.addEventListener('mousemove', e => { movePlayer(e.clientY); });
+  canvas.addEventListener('touchstart', e => { movePlayer(e.touches[0].clientY); });
+  canvas.addEventListener('touchmove', e => { movePlayer(e.touches[0].clientY); });
+  canvas.addEventListener('click', shoot);
+  canvas.addEventListener('touchend', shoot);
+
+  function movePlayer(y) {
+    const rect = canvas.getBoundingClientRect();
+    player.y = Math.max(0, Math.min(canvas.height - player.height, y - rect.top - player.height/2));
+  }
+
+  function shoot() {
     if(shootCooldown <= 0){
-        bullets.push({
-            x: player.x + player.width,
-            y: player.y + player.height/2 - 2,
-            width: 12,
-            height: 4,
-            speed: 8
-        });
-        shootCooldown = 20;
+      shots.push({x:player.x+player.width, y:player.y+player.height/2-2, width:10, height:4, speed:8});
+      shootCooldown = 20;
     }
-}
+  }
 
-// === UI ===
-function openAgentBird(){
-    wrapper.style.display = "block";
-    startGame();
-}
-function backToMain(){
-    wrapper.style.display = "none";
-    gameOn = false;
-    cancelAnimationFrame(loopId);
-}
+  function spawnGeese(){ if(Math.random()<0.01){ geese.push({ x:800, y:Math.random()*400, width:50, height:40, color:'gray', cooldown:100 }); } }
+  function spawnPlanes(){ if(Math.random()<0.005){ planes.push({ x:800, y:Math.random()*200+50, width:80, height:40, color:'black', speed:2 }); } }
+  function spawnPowerups(){ if(Math.random()<0.002){ const type = Math.random()<0.5?'shield':'speed'; powerups.push({ x:800, y:Math.random()*400, width:20, height:20, type, speed:2 }); } }
+  function spawnWeather(){
+    if(Math.random()<0.05) particles.push({ x:Math.random()*800, y:0, speed:Math.random()*3+1, type:'snow' });
+    if(Math.random()<0.02) particles.push({ x:Math.random()*800, y:0, speed:Math.random()*5+2, type:'rain' });
+    if(Math.random()<0.001) particles.push({ x:Math.random()*800, y:Math.random()*200, type:'lightning', life:10 });
+  }
 
-// === GAME START ===
-function startGame(){
-    player = { x:100, y:250, width:40, height:30, color:'orange' };
-    bullets = [];
-    enemies = [];
-    score = 0;
-    shootCooldown = 0;
-    gameOn = true;
+  function collide(a,b){
+    return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
+  }
 
-    loop();
-}
+  function update(){
+    if(shootCooldown>0) shootCooldown--;
 
-// === GAME LOOP ===
-function loop(){
+    if(player.y + player.height >= groundY){
+      player.y = groundY - player.height;
+      onGround = true;
+      score += 0.1;
+    } else onGround = false;
+
+    geese.forEach((g,i)=>{
+      g.x -= 2; g.cooldown--;
+      if(g.cooldown <= 0){ bullets.push({ x:g.x, y:g.y+20, speed:5 }); g.cooldown=100; }
+      if(g.x + g.width < 0) geese.splice(i,1);
+    });
+    bullets.forEach((b,i)=>{
+      b.x -= b.speed;
+      if(collide(player,b)){ if(player.shield>0){player.shield--; bullets.splice(i,1);} else{ alert("Game Over"); backBtn.click(); } }
+      if(b.x<0) bullets.splice(i,1);
+    });
+    planes.forEach((p,i)=>{
+      p.x -= p.speed;
+      if(collide(player,p)){ if(player.shield>0){player.shield--; planes.splice(i,1);} else{ alert("Game Over"); backBtn.click(); } }
+      if(p.x+p.width<0) planes.splice(i,1);
+    });
+
+    shots.forEach((s,i)=>{
+      s.x += s.speed;
+      geese.forEach((g,gi)=>{ if(collide(s,g)){ geese.splice(gi,1); shots.splice(i,1); score+=10; } });
+      planes.forEach((p,pi)=>{ if(collide(s,p)){ planes.splice(pi,1); shots.splice(i,1); score+=20; } });
+      if(s.x>canvas.width) shots.splice(i,1);
+    });
+
+    powerups.forEach((p,i)=>{
+      p.x -= p.speed;
+      if(collide(player,p)){
+        if(p.type==='shield') player.shield+=3;
+        if(p.type==='speed'){ player.speed=8; setTimeout(()=>{player.speed=4;},5000); }
+        powerups.splice(i,1);
+      }
+      if(p.x+p.width<0) powerups.splice(i,1);
+    });
+
+    particles.forEach((p,i)=>{
+      if(p.type==='snow'||p.type==='rain') p.y+=p.speed;
+      if(p.type==='lightning') p.life--;
+      if(p.y>canvas.height||p.life<=0) particles.splice(i,1);
+    });
+
+    spawnGeese(); spawnPlanes(); spawnPowerups(); spawnWeather();
+    score += 0.05;
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='#87CEEB';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='#228B22';
+    ctx.fillRect(0,groundY,canvas.width,canvas.height-groundY);
+    ctx.fillStyle=player.color;
+    ctx.fillRect(player.x,player.y,player.width,player.height);
+
+    geese.forEach(g=>{ ctx.fillStyle=g.color; ctx.fillRect(g.x,g.y,g.width,g.height); });
+    planes.forEach(p=>{ ctx.fillStyle=p.color; ctx.fillRect(p.x,p.y,p.width,p.height); });
+    bullets.forEach(b=>{ ctx.fillStyle='black'; ctx.fillRect(b.x,b.y,5,5); });
+    shots.forEach(s=>{ ctx.fillStyle='red'; ctx.fillRect(s.x,s.y,s.width,s.height); });
+
+    powerups.forEach(p=>{
+      ctx.fillStyle=p.type==='shield'?'cyan':'yellow';
+      ctx.fillRect(p.x,p.y,p.width,p.height);
+    });
+
+    particles.forEach(p=>{
+      if(p.type==='snow') ctx.fillStyle='white';
+      else if(p.type==='rain') ctx.fillStyle='blue';
+      ctx.fillRect(p.x,p.y,4,4);
+      if(p.type==='lightning'){ ctx.strokeStyle='yellow'; ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(p.x+5,p.y+20); ctx.stroke(); }
+    });
+
+    ctx.fillStyle='black';
+    ctx.font='20px Arial';
+    ctx.fillText('Score: '+Math.floor(score),10,30);
+    ctx.fillText('Shield: '+player.shield,10,60);
+    ctx.fillText(onGround?'On Ground':'In Air',10,90);
+  }
+
+  function gameLoop(){
     update();
     draw();
-    if(gameOn) loopId = requestAnimationFrame(loop);
+    game1LoopId = requestAnimationFrame(gameLoop);
+  }
+  gameLoop();
 }
-
-// === UPDATE ===
-function update(){
-    // Keep player in bounds
-    if(player.y < 0) player.y = 0;
-    if(player.y + player.height > canvas.height - 50)
-        player.y = canvas.height - 50 - player.height;
-
-    // Spawn enemies
-    if(Math.random() < 0.02){
-        enemies.push({
-            x: canvas.width,
-            y: Math.random() * (canvas.height - 80),
-            width: 50,
-            height: 40,
-            speed: 2 + Math.random() * 2
-        });
-    }
-
-    // Update bullets
-    bullets.forEach((b, i)=>{
-        b.x += b.speed;
-        if(b.x > canvas.width) bullets.splice(i,1);
-
-        enemies.forEach((e, j)=>{
-            if(b.x < e.x + e.width &&
-               b.x + b.width > e.x &&
-               b.y < e.y + e.height &&
-               b.y + b.height > e.y){
-                bullets.splice(i,1);
-                enemies.splice(j,1);
-            }
-        });
-    });
-
-    // Update enemies
-    enemies.forEach((e,i)=>{
-        e.x -= e.speed;
-        if(e.x + e.width < 0) enemies.splice(i,1);
-    });
-
-    if(shootCooldown > 0) shootCooldown--;
-
-    score += 0.1;
-    scoreDisplay.innerText = "Score: " + Math.floor(score);
-}
-
-// === DRAW ===
-function draw(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-
-    // Sky
-    ctx.fillStyle = "#87CEEB";
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-
-    // Ground
-    ctx.fillStyle = "#2e8b57";
-    ctx.fillRect(0, canvas.height - 50, canvas.width, 50);
-
-    // Player
-    ctx.fillStyle = player.color;
-    ctx.fillRect(player.x, player.y, player.width, player.height);
-
-    // Bullets
-    ctx.fillStyle = "yellow";
-    bullets.forEach(b=>{
-        ctx.fillRect(b.x, b.y, b.width, b.height);
-    });
-
-    // Enemies
-    ctx.fillStyle = "gray";
-    enemies.forEach(e=>{
-        ctx.fillRect(e.x, e.y, e.width, e.height);
-    });
-}
-
 </script>
+
 </body>
 </html>
