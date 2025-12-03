@@ -74,7 +74,86 @@ Discover 12 amazing games, directly in your browser. Touch, click, or keyboard c
   <div class="placeholder-text">Cyber Runner – Payment Simulation</div>
 </div>
 
+  
 <script>
+  
+<script src="https://cdn.jsdelivr.net/npm/web3/dist/web3.min.js">
+<script src="https://unpkg.com/@solana/web3.js@1.73.0/lib/index.iife.js">
+
+  // ===== CONFIG =====
+const CONFIG = {
+  PAYMENT_ENABLED:true,
+  ETH_ADDRESS:"YOUR_ETH_ADDRESS",
+  SOL_ADDRESS:"YOUR_SOL_ADDRESS",
+  PAYMENT_AMOUNT_ETH:0.0001,
+  PAYMENT_AMOUNT_SOL:0.0005 // 0.0005 SOL
+};
+
+// ===== GAME CONTROL =====
+function openGame(id){
+  document.querySelectorAll('.game-container').forEach(c=>c.style.display='none');
+  document.getElementById(id).style.display='flex';
+  if(id==='game1'){startGame1();}
+  if(id==='game2'){startGame2();}
+}
+function closeGame(id){
+  document.getElementById(id).style.display='none';
+}
+
+// ===== ETH PAYMENT =====
+async function payETH(amountETH){
+  if(typeof window.ethereum==='undefined'){alert("MetaMask not installed"); return false;}
+  const web3 = new Web3(window.ethereum);
+  try{
+    await window.ethereum.request({method:'eth_requestAccounts'});
+    const accounts = await web3.eth.getAccounts();
+    await web3.eth.sendTransaction({
+      from: accounts[0],
+      to: CONFIG.ETH_ADDRESS,
+      value: web3.utils.toWei(amountETH.toString(), 'ether')
+    });
+    alert("ETH Payment Successful!");
+    return true;
+  }catch(err){console.error(err); alert("ETH Payment Failed!"); return false;}
+}
+
+// ===== SOL PAYMENT =====
+async function paySOL(amountSOL){
+  if(!window.solana){alert("Solana wallet not found"); return false;}
+  try{
+    await window.solana.connect();
+    const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('mainnet-beta'));
+    const fromPubkey = window.solana.publicKey;
+    const toPubkey = new solanaWeb3.PublicKey(CONFIG.SOL_ADDRESS);
+    const transaction = new solanaWeb3.Transaction().add(
+      solanaWeb3.SystemProgram.transfer({
+        fromPubkey, toPubkey,
+        lamports: amountSOL * solanaWeb3.LAMPORTS_PER_SOL
+      })
+    );
+    const {signature} = await window.solana.signAndSendTransaction(transaction);
+    await connection.confirmTransaction(signature);
+    alert("SOL Payment Successful!");
+    return true;
+  }catch(err){console.error(err); alert("SOL Payment Failed!"); return false;}
+}
+
+// ===== GAME 2 START WITH PAYMENT =====
+async function startGame2(){
+  if(CONFIG.PAYMENT_ENABLED){
+    let choice = confirm("Unlock Game 2?\nETH: "+CONFIG.PAYMENT_AMOUNT_ETH+" ETH\nSOL: "+CONFIG.PAYMENT_AMOUNT_SOL+" SOL");
+    if(choice){
+      let method = prompt("Type 'ETH' or 'SOL' to pay");
+      let success=false;
+      if(method.toUpperCase()==='ETH') success = await payETH(CONFIG.PAYMENT_AMOUNT_ETH);
+      if(method.toUpperCase()==='SOL') success = await paySOL(CONFIG.PAYMENT_AMOUNT_SOL);
+      if(!success) return alert("Payment failed, cannot start Game 2!");
+    }else{return;}
+  }
+  alert("Game 2 unlocked! Start your adventure here.");
+  // TODO: insert Game 2 logic here
+}
+  
 // ================= CONFIG =================
 const CONFIG = {
   PAYMENT_ENABLED: true, // true = payment active
