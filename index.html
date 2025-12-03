@@ -5,20 +5,26 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OrangeWeb – Game Portal</title>
 <style>
-body {margin:0;font-family:'Segoe UI',sans-serif;background:#0f0f17;color:#fff;display:flex;flex-direction:column;min-height:100vh;}
-header {background:linear-gradient(90deg,#ff7a00,#ffaa33);padding:20px;font-size:2em;text-align:center;font-weight:bold;box-shadow:0 4px 10px rgba(0,0,0,0.5);}
-.description {text-align:center;margin:20px;font-size:1.2em;color:#ddd;}
-.button-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:20px;padding:20px;width:95%;margin:0 auto;}
-.gameBtn {background:#1a1a2e;border:2px solid #ff7a00;color:#ff7a00;font-size:1.1em;padding:20px;border-radius:12px;cursor:pointer;font-weight:bold;display:flex;flex-direction:column;align-items:center;transition:0.3s;}
-.gameBtn:hover {background:#ff7a00;color:#000;}
-.gameBtn small {font-size:0.8em;margin-top:5px;color:#ddd;}
-.game-container {display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:#111;z-index:9999;flex-direction:column;justify-content:center;align-items:center;}
-canvas {width:95vw;height:70vh;background:#111;border:3px solid #ff7a00;border-radius:12px;}
-.backBtn {margin-top:15px;padding:12px 25px;background:#ff7a00;border:none;border-radius:10px;font-weight:bold;font-size:1em;cursor:pointer;color:#000;}
-.backBtn:hover {background:#ffaa33;}
-.placeholder-text {margin-top:10px;color:#aaa;font-size:0.95em;text-align:center;}
+  /* === Base Styles === */
+  * {box-sizing:border-box;margin:0;padding:0;}
+  body {font-family:'Segoe UI',sans-serif;background:#0f0f17;color:#fff;display:flex;flex-direction:column;min-height:100vh;}
+  header {background:linear-gradient(90deg,#ff7a00,#ffaa33);padding:20px;font-size:2em;text-align:center;font-weight:bold;box-shadow:0 4px 10px rgba(0,0,0,0.5);}
+  .description {text-align:center;margin:20px;font-size:1.2em;color:#ddd;}
+  
+  /* === Grid Buttons === */
+  .button-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:20px;padding:20px;width:95%;margin:0 auto;}
+  .gameBtn {background:#1a1a2e;border:2px solid #ff7a00;color:#ff7a00;font-size:1.1em;padding:20px;border-radius:12px;cursor:pointer;font-weight:bold;display:flex;flex-direction:column;align-items:center;transition:0.3s;}
+  .gameBtn:hover {background:#ff7a00;color:#000;}
+  .gameBtn small {font-size:0.8em;margin-top:5px;color:#ddd;}
+
+  /* === Game Container === */
+  .game-container {display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:#111;z-index:9999;flex-direction:column;justify-content:center;align-items:center;}
+  canvas {width:95vw;height:70vh;background:#111;border:3px solid #ff7a00;border-radius:12px;}
+  .backBtn {margin-top:15px;padding:12px 25px;background:#ff7a00;border:none;border-radius:10px;font-weight:bold;font-size:1em;cursor:pointer;color:#000;}
+  .backBtn:hover {background:#ffaa33;}
+  .placeholder-text {margin-top:10px;color:#aaa;font-size:0.95em;text-align:center;}
 </style>
-<!-- Solana Web3.js -->
+<!-- Solana Web3.js for payment -->
 <script src="https://unpkg.com/@solana/web3.js@1.73.0/lib/index.iife.js"></script>
 </head>
 <body>
@@ -26,7 +32,7 @@ canvas {width:95vw;height:70vh;background:#111;border:3px solid #ff7a00;border-r
 <header>OrangeWeb – Ultimate Game Portal</header>
 
 <div class="description">
-12 exciting games, play directly in your browser. Touch, click, or keyboard control.
+12 exciting games, play directly in your browser. Touch or mouse controls, fully responsive UI.
 </div>
 
 <div class="button-grid">
@@ -36,14 +42,14 @@ canvas {width:95vw;height:70vh;background:#111;border:3px solid #ff7a00;border-r
   <button class="gameBtn" onclick="openGame('game4')">Game 4<br><small>Coming Soon</small></button>
 </div>
 
-<!-- GAME 1 -->
+<!-- === Game 1 Container === -->
 <div id="game1" class="game-container">
   <canvas id="game1Canvas"></canvas>
   <button class="backBtn" onclick="closeGame('game1')">Back to OrangeWeb</button>
   <div class="placeholder-text">Agent Bird – Free Play</div>
 </div>
 
-<!-- GAME 2 -->
+<!-- === Game 2 Container === -->
 <div id="game2" class="game-container">
   <canvas id="game2Canvas"></canvas>
   <button class="backBtn" onclick="closeGame('game2')">Back to OrangeWeb</button>
@@ -51,174 +57,5 @@ canvas {width:95vw;height:70vh;background:#111;border:3px solid #ff7a00;border-r
 </div>
 
 <script>
-// ===================== CONFIG =====================
+/* === CONFIG === */
 const CONFIG = {
-  PAYMENT_ENABLED: true, // true = payment active for testing
-  ETH_ADDRESS: "DEINE_ETH_ADRESSE",
-  SOL_ADDRESS: "DEINE_SOL_ADRESSE",
-  PAYMENT_AMOUNT_ETH: 0.0001,
-  PAYMENT_AMOUNT_SOL: 0.0005
-};
-
-// ===================== GAME CONTAINERS =====================
-function openGame(id){
-  document.querySelectorAll('.game-container').forEach(c=>c.style.display='none');
-  document.getElementById(id).style.display='flex';
-  if(id==='game1'){startGame1();}
-  if(id==='game2'){startGame2();}
-}
-function closeGame(id){
-  document.getElementById(id).style.display='none';
-}
-
-// ===================== GAME 1 – Agent Bird =====================
-let g1Canvas=document.getElementById('game1Canvas');
-let g1Ctx=g1Canvas.getContext('2d');
-g1Canvas.width=g1Canvas.clientWidth; g1Canvas.height=g1Canvas.clientHeight;
-
-let g1Running=false;
-let bird={x:50,y:g1Canvas.height/2,w:40,h:40};
-let bullets=[], enemies=[], lastSpawn=0;
-
-function startGame1(){
-  g1Running=true;
-  requestAnimationFrame(loopG1);
-}
-function spawnEnemyG1(){enemies.push({x:g1Canvas.width,y:Math.random()*(g1Canvas.height-50),w:40,h:40,speed:3});}
-function shootG1(){bullets.push({x:bird.x+bird.w,y:bird.y+bird.h/2,w:10,h:5,speed:10});}
-
-function loopG1(t){
-  if(!g1Running) return;
-  g1Ctx.clearRect(0,0,g1Canvas.width,g1Canvas.height);
-
-  if(t-lastSpawn>1000){spawnEnemyG1(); lastSpawn=t;}
-
-  // draw bird
-  g1Ctx.fillStyle='cyan';
-  g1Ctx.fillRect(bird.x,bird.y,bird.w,bird.h);
-
-  // bullets
-  bullets=bullets.filter(b=>b.x<g1Canvas.width);
-  bullets.forEach(b=>{b.x+=b.speed; g1Ctx.fillStyle='lime'; g1Ctx.fillRect(b.x,b.y,b.w,b.h);});
-
-  // enemies
-  enemies=enemies.filter(e=>e.x+e.w>0);
-  enemies.forEach(e=>{
-    e.x-=e.speed;
-    g1Ctx.fillStyle='red';
-    g1Ctx.fillRect(e.x,e.y,e.w,e.h);
-
-    // collision
-    if(e.x<bird.x+bird.w && e.x+e.w>bird.x && e.y<bird.y+bird.h && e.y+e.h>bird.y){
-      g1Running=false;
-      alert("Game Over!");
-    }
-  });
-
-  // bullet hits enemy
-  for(let i=0;i<enemies.length;i++){
-    for(let j=0;j<bullets.length;j++){
-      let e=enemies[i], b=bullets[j];
-      if(b.x<e.x+e.w && b.x+b.w>e.x && b.y<e.y+e.h && b.y+b.h>e.y){
-        enemies.splice(i,1); bullets.splice(j,1);
-      }
-    }
-  }
-
-  requestAnimationFrame(loopG1);
-}
-
-// mouse & touch
-document.addEventListener('mousemove',e=>{if(!g1Running)return; let r=g1Canvas.getBoundingClientRect(); bird.y=e.clientY-r.top-bird.h/2;});
-document.addEventListener('touchmove',e=>{if(!g1Running)return; let r=g1Canvas.getBoundingClientRect(); bird.y=e.touches[0].clientY-r.top-bird.h/2;});
-document.addEventListener('click',()=>{if(g1Running) shootG1();});
-document.addEventListener('touchstart',()=>{if(g1Running) shootG1();});
-
-// ===================== GAME 2 – Cyber Runner with Payment =====================
-let g2Canvas=document.getElementById('game2Canvas');
-let g2Ctx=g2Canvas.getContext('2d');
-g2Canvas.width=g2Canvas.clientWidth; g2Canvas.height=g2Canvas.clientHeight;
-
-let g2Running=false;
-let g2Unlocked=false;
-let player2={x:50,y:g2Canvas.height/2,w:40,h:40};
-let bullets2=[], enemies2=[], lastSpawn2=0;
-
-async function startGame2(){
-  if(!CONFIG.PAYMENT_ENABLED && !g2Unlocked){await payETH(); return;}
-  g2Running=true;
-  requestAnimationFrame(loopG2);
-}
-function spawnEnemyG2(){enemies2.push({x:g2Canvas.width,y:Math.random()*(g2Canvas.height-50),w:40,h:40,speed:3});}
-function shootG2(){bullets2.push({x:player2.x+player2.w,y:player2.y+player2.h/2,w:10,h:5,speed:10});}
-
-function loopG2(t){
-  if(!g2Running) return;
-  g2Ctx.clearRect(0,0,g2Canvas.width,g2Canvas.height);
-
-  if(t-lastSpawn2>1000){spawnEnemyG2(); lastSpawn2=t;}
-
-  // draw player
-  g2Ctx.fillStyle='cyan';
-  g2Ctx.fillRect(player2.x,player2.y,player2.w,player2.h);
-
-  // bullets
-  bullets2=bullets2.filter(b=>b.x<g2Canvas.width);
-  bullets2.forEach(b=>{b.x+=b.speed; g2Ctx.fillStyle='lime'; g2Ctx.fillRect(b.x,b.y,b.w,b.h);});
-
-  // enemies
-  enemies2=enemies2.filter(e=>e.x+e.w>0);
-  enemies2.forEach(e=>{e.x-=e.speed; g2Ctx.fillStyle='red'; g2Ctx.fillRect(e.x,e.y,e.w,e.h);
-    if(e.x<player2.x+player2.w && e.x+e.w>player2.x && e.y<player2.y+player2.h && e.y+e.h>player2.y){
-      g2Running=false; alert("Game Over!");}});
-
-  // bullet hits enemy
-  for(let i=0;i<enemies2.length;i++){
-    for(let j=0;j<bullets2.length;j++){
-      let e=enemies2[i], b=bullets2[j];
-      if(b.x<e.x+e.w && b.x+b.w>e.x && b.y<e.y+e.h && b.y+b.h>e.y){
-        enemies2.splice(i,1); bullets2.splice(j,1);
-      }
-    }
-  }
-
-  requestAnimationFrame(loopG2);
-}
-
-// mouse & touch
-document.addEventListener('mousemove',e=>{if(!g2Running)return; let r=g2Canvas.getBoundingClientRect(); player2.y=e.clientY-r.top-player2.h/2;});
-document.addEventListener('touchmove',e=>{if(!g2Running)return; let r=g2Canvas.getBoundingClientRect(); player2.y=e.touches[0].clientY-r.top-player2.h/2;});
-document.addEventListener('click',()=>{if(g2Running) shootG2();});
-document.addEventListener('touchstart',()=>{if(g2Running) shootG2();});
-
-// ===================== SIMULATED PAYMENT =====================
-async function payETH(){
-  if(CONFIG.PAYMENT_ENABLED){g2Unlocked=true; alert("Payment true: Game unlocked"); return;}
-  if(window.ethereum){
-    await window.ethereum.request({method:'eth_requestAccounts'});
-    await window.ethereum.request({
-      method:'eth_sendTransaction',
-      params:[{from:window.ethereum.selectedAddress,to:CONFIG.ETH_ADDRESS,value:'0x'+(CONFIG.PAYMENT_AMOUNT_ETH*1e18).toString(16)}]
-    });
-    g2Unlocked=true;
-  }else{alert("MetaMask not found!");}
-}
-
-async function paySOL(){
-  if(CONFIG.PAYMENT_ENABLED){g2Unlocked=true; alert("Payment true: Game unlocked"); return;}
-  if(window.solana){
-    const connection=new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('mainnet-beta'));
-    const fromPubkey=window.solana.publicKey;
-    const toPubkey=new solanaWeb3.PublicKey(CONFIG.SOL_ADDRESS);
-    const tx=new solanaWeb3.Transaction().add(
-      solanaWeb3.SystemProgram.transfer({fromPubkey,toPubkey,lamports:CONFIG.PAYMENT_AMOUNT_SOL*1e9})
-    );
-    const signature=await window.solana.signAndSendTransaction(tx);
-    await connection.confirmTransaction(signature);
-    g2Unlocked=true;
-  }else{alert("Solana wallet not found!");}
-}
-</script>
-
-</body>
-</html>
