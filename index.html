@@ -3,431 +3,249 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OrangeWeb</title>
+<title>OrangeWeb – Ultimate Game Portal</title>
 <style>
-  body { font-family: Arial, sans-serif; text-align: center; background: #f0f0f0; margin:0; padding:0; }
-  header { background: orange; color: white; padding: 10px; font-size: 24px; }
-  #gameContainer { margin: 20px auto; max-width: 800px; min-height: 500px; background: #fff; border: 2px solid #ccc; position: relative; }
-  .btn { margin:5px; padding:10px 15px; font-size:16px; cursor:pointer; border:none; border-radius:5px; background:orange; color:white; }
-  .backBtn { position:absolute; bottom:10px; left:10px; padding:5px 10px; font-size:14px; background:red; color:white; }
+    body {
+        margin: 0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: #0f0f17;
+        color: #ffffff;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+
+    header {
+        background: linear-gradient(90deg, #ff7a00, #ffaa33);
+        padding: 20px;
+        font-size: 2em;
+        font-weight: bold;
+        text-align: center;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    }
+
+    .description {
+        text-align: center;
+        margin: 20px;
+        font-size: 1.2em;
+        color: #ddd;
+    }
+
+    .button-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 20px;
+        padding: 20px;
+        width: 95%;
+        margin: 0 auto;
+    }
+
+    .gameBtn {
+        background: #1a1a2e;
+        border: 2px solid #ff7a00;
+        color: #ff7a00;
+        font-size: 1.1em;
+        padding: 20px;
+        border-radius: 12px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: 0.3s;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .gameBtn:hover {
+        background: #ff7a00;
+        color: #000;
+    }
+
+    .gameBtn small {
+        font-size: 0.8em;
+        margin-top: 5px;
+        color: #ddd;
+    }
+
+    .game-container {
+        display: none;
+        position: fixed;
+        top: 0; left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: #111;
+        z-index: 9999;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    canvas {
+        width: 95vw;
+        height: 70vh;
+        background: #111;
+        border: 3px solid #ff7a00;
+        border-radius: 12px;
+    }
+
+    .backBtn {
+        margin-top: 15px;
+        padding: 12px 25px;
+        background: #ff7a00;
+        border: none;
+        border-radius: 10px;
+        font-weight: bold;
+        font-size: 1em;
+        cursor: pointer;
+        color: #000;
+    }
+
+    .backBtn:hover {
+        background: #ffaa33;
+    }
+
+    .placeholder-text {
+        margin-top: 10px;
+        color: #aaa;
+        font-size: 0.95em;
+        text-align: center;
+    }
 </style>
 </head>
 <body>
 
-<header>OrangeWeb</header>
+<header>OrangeWeb – Your Ultimate Game Portal</header>
 
-<h2>Überschrift</h2>
-<p>Hier entsteht selfmade wie immer</p>
-
-<button class="btn" onclick="location.reload()">Reload</button>
-
-<div>
-  <button class="btn" onclick="startAgentBird(document.getElementById('gameContainer'))">Game 1</button>
-  <button class="btn" onclick="alert('Game 2 coming soon')">Game 2</button>
-  <button class="btn" onclick="alert('Game 3 coming soon')">Game 3</button>
-  <button class="btn" onclick="alert('Game 4 coming soon')">Game 4</button>
-  <button class="btn" onclick="alert('Game 5 coming soon')">Game 5</button>
-  <button class="btn" onclick="alert('Game 6 coming soon')">Game 6</button>
-  <button class="btn" onclick="alert('Game 7 coming soon')">Game 7</button>
-  <button class="btn" onclick="alert('Game 8 coming soon')">Game 8</button>
-  <button class="btn" onclick="alert('Game 9 coming soon')">Game 9</button>
-  <button class="btn" onclick="alert('Game 10 coming soon')">Game 10</button>
-  <button class="btn" onclick="alert('Game 11 coming soon')">Game 11</button>
-  <button class="btn" onclick="alert('Game 12 coming soon')">Game 12</button>
+<div class="description">
+    12 exciting games, play directly in your browser. Touch, click, or keyboard control.  
+    Each button opens a full-screen game placeholder ready for your code.
 </div>
 
-<div id="gameContainer"></div>
-  <div id="gameContainer"></div>
+<div class="button-grid">
+    <button class="gameBtn" onclick="openGame('game1')">
+        Game 1<br><small>Agent Bird</small>
+    </button>
+    <button class="gameBtn" onclick="openGame('game2')">
+        Game 2<br><small>Cyber Runner</small>
+    </button>
+    <button class="gameBtn" onclick="openGame('game3')">
+        Game 3<br><small>Coming Soon</small>
+    </button>
+    <button class="gameBtn" onclick="openGame('game4')">
+        Game 4<br><small>Coming Soon</small>
+    </button>
+    <button class="gameBtn" onclick="openGame('game5')">
+        Game 5<br><small>Coming Soon</small>
+    </button>
+    <button class="gameBtn" onclick="openGame('game6')">
+        Game 6<br><small>Coming Soon</small>
+    </button>
+    <button class="gameBtn" onclick="openGame('game7')">
+        Game 7<br><small>Coming Soon</small>
+    </button>
+    <button class="gameBtn" onclick="openGame('game8')">
+        Game 8<br><small>Coming Soon</small>
+    </button>
+    <button class="gameBtn" onclick="openGame('game9')">
+        Game 9<br><small>Coming Soon</small>
+    </button>
+    <button class="gameBtn" onclick="openGame('game10')">
+        Game 10<br><small>Coming Soon</small>
+    </button>
+    <button class="gameBtn" onclick="openGame('game11')">
+        Game 11<br><small>Coming Soon</small>
+    </button>
+    <button class="gameBtn" onclick="openGame('game12')">
+        Game 12<br><small>Coming Soon</small>
+    </button>
+</div>
 
-<!-- ----------------- AGENTBIRD SCRIPT ----------------- -->
-<script>
-  <!-- ============================================================ -->
-<!--                     GAME 2 – PAYMENT VERSION                 -->
-<!-- ============================================================ -->
+<!-- ========================================================= -->
+<!-- GAME CONTAINERS – Platzhalter für alle 12 Games -->
+<!-- ========================================================= -->
+<div id="game1" class="game-container">
+    <canvas id="game1Canvas"></canvas>
+    <button class="backBtn" onclick="closeGame('game1')">Back to OrangeWeb</button>
+    <div class="placeholder-text">Insert Agent Bird code here.</div>
+</div>
 
-<style>
-#game2Container {
-    display: none;
-    position: fixed;
-    top: 0; left: 0;
-    width: 100vw; height: 100vh;
-    background: #000;
-    z-index: 9999;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-}
-#game2Canvas {
-    width: 90vw;
-    height: 90vh;
-    background: #111;
-    border: 3px solid cyan;
-}
-.game2Btn {
-    margin: 10px;
-    padding: 12px 25px;
-    border-radius: 10px;
-    border: none;
-    font-size: 18px;
-    cursor: pointer;
-}
-#payETH { background: gold; }
-#paySOL { background: #15F195; }
-#backMenu2 {
-    background: red;
-    color: white;
-}
-</style>
+<div id="game2" class="game-container">
+    <canvas id="game2Canvas"></canvas>
+    <button class="backBtn" onclick="closeGame('game2')">Back to OrangeWeb</button>
+    <div class="placeholder-text">Insert Cyber Runner code here.</div>
+</div>
 
-<!-- GAME 2 WINDOW -->
-<div id="game2Container">
-    <h2 style="color:white;">Game 2 – Access Required</h2>
+<div id="game3" class="game-container">
+    <canvas id="game3Canvas"></canvas>
+    <button class="backBtn" onclick="closeGame('game3')">Back to OrangeWeb</button>
+    <div class="placeholder-text">Game 3 placeholder.</div>
+</div>
 
-    <p style="color:white">Price: 0.0001 ETH or 0.01 SOL</p>
+<div id="game4" class="game-container">
+    <canvas id="game4Canvas"></canvas>
+    <button class="backBtn" onclick="closeGame('game4')">Back to OrangeWeb</button>
+    <div class="placeholder-text">Game 4 placeholder.</div>
+</div>
 
-    <button id="payETH" class="game2Btn">Pay with Ethereum (MetaMask)</button>
-    <button id="paySOL" class="game2Btn">Pay with Solana (Sollet)</button>
+<div id="game5" class="game-container">
+    <canvas id="game5Canvas"></canvas>
+    <button class="backBtn" onclick="closeGame('game5')">Back to OrangeWeb</button>
+    <div class="placeholder-text">Game 5 placeholder.</div>
+</div>
 
-    <canvas id="game2Canvas" style="display:none;"></canvas>
+<div id="game6" class="game-container">
+    <canvas id="game6Canvas"></canvas>
+    <button class="backBtn" onclick="closeGame('game6')">Back to OrangeWeb</button>
+    <div class="placeholder-text">Game 6 placeholder.</div>
+</div>
 
-    <button id="backMenu2" class="game2Btn">Back to Menu</button>
+<div id="game7" class="game-container">
+    <canvas id="game7Canvas"></canvas>
+    <button class="backBtn" onclick="closeGame('game7')">Back to OrangeWeb</button>
+    <div class="placeholder-text">Game 7 placeholder.</div>
+</div>
+
+<div id="game8" class="game-container">
+    <canvas id="game8Canvas"></canvas>
+    <button class="backBtn" onclick="closeGame('game8')">Back to OrangeWeb</button>
+    <div class="placeholder-text">Game 8 placeholder.</div>
+</div>
+
+<div id="game9" class="game-container">
+    <canvas id="game9Canvas"></canvas>
+    <button class="backBtn" onclick="closeGame('game9')">Back to OrangeWeb</button>
+    <div class="placeholder-text">Game 9 placeholder.</div>
+</div>
+
+<div id="game10" class="game-container">
+    <canvas id="game10Canvas"></canvas>
+    <button class="backBtn" onclick="closeGame('game10')">Back to OrangeWeb</button>
+    <div class="placeholder-text">Game 10 placeholder.</div>
+</div>
+
+<div id="game11" class="game-container">
+    <canvas id="game11Canvas"></canvas>
+    <button class="backBtn" onclick="closeGame('game11')">Back to OrangeWeb</button>
+    <div class="placeholder-text">Game 11 placeholder.</div>
+</div>
+
+<div id="game12" class="game-container">
+    <canvas id="game12Canvas"></canvas>
+    <button class="backBtn" onclick="closeGame('game12')">Back to OrangeWeb</button>
+    <div class="placeholder-text">Game 12 placeholder.</div>
 </div>
 
 <script>
-/* ============================================================
-   PAYMENT SETTINGS
-============================================================ */
-
-const ETH_ADDRESS = "DEINE_ETH_ADRESSE_HIER";
-const SOL_ADDRESS = "DEINE_SOL_ADRESSE_HIER";
-
-let game2Unlocked = false;
-
-/* ============================================================
-   GAME 2 LOGIC
-============================================================ */
-let g2Running = false;
-let g2Canvas, g2Ctx;
-let g2Player = { x:50, y:200, w:40, h:40 };
-let g2Bullets = [];
-let g2Enemies = [];
-let g2LastSpawn = 0;
-
-function startGame2() {
-    const canvas = document.getElementById("game2Canvas");
-    canvas.style.display = "block";
-
-    canvas.width = canvas.clientWidth;
-    canvas.height = canvas.clientHeight;
-
-    g2Canvas = canvas;
-    g2Ctx = canvas.getContext("2d");
-
-    g2Running = true;
-    requestAnimationFrame(game2Loop);
+// -------------------------------------------------------------
+// Single Script for OrangeWeb
+// -------------------------------------------------------------
+function openGame(id) {
+    const containers = document.querySelectorAll('.game-container');
+    containers.forEach(c => c.style.display = 'none');
+    document.getElementById(id).style.display = 'flex';
 }
 
-function spawnEnemy2() {
-    g2Enemies.push({
-        x: g2Canvas.width,
-        y: Math.random() * (g2Canvas.height-50),
-        w: 40, h: 40,
-        speed: 3
-    });
-}
-
-function shoot2() {
-    g2Bullets.push({
-        x: g2Player.x + g2Player.w,
-        y: g2Player.y + g2Player.h/2,
-        w: 10, h: 5,
-        speed: 10
-    });
-}
-
-function game2Loop(t) {
-    if (!g2Running) return;
-
-    g2Ctx.clearRect(0,0,g2Canvas.width,g2Canvas.height);
-
-    // Spawn enemies every 1 sec
-    if (t - g2LastSpawn > 1000) {
-        spawnEnemy2();
-        g2LastSpawn = t;
-    }
-
-    // Draw & move player
-    g2Ctx.fillStyle = "cyan";
-    g2Ctx.fillRect(g2Player.x,g2Player.y,g2Player.w,g2Player.h);
-
-    // Bullets
-    g2Bullets = g2Bullets.filter(b => b.x < g2Canvas.width);
-    g2Bullets.forEach(b=>{
-        b.x += b.speed;
-        g2Ctx.fillStyle="lime";
-        g2Ctx.fillRect(b.x,b.y,b.w,b.h);
-    });
-
-    // Enemies
-    g2Enemies = g2Enemies.filter(e => e.x+e.w > 0);
-    g2Enemies.forEach(e=>{
-        e.x -= e.speed;
-        g2Ctx.fillStyle="red";
-        g2Ctx.fillRect(e.x,e.y,e.w,e.h);
-
-        // collision
-        if (e.x < g2Player.x+g2Player.w &&
-            e.x+e.w > g2Player.x &&
-            e.y < g2Player.y+g2Player.h &&
-            e.y+e.h > g2Player.y) {
-            alert("Game Over");
-            closeGame2();
-        }
-    });
-
-    // Bullet hits enemy
-    for (let i=0;i<g2Enemies.length;i++){
-        for (let j=0;j<g2Bullets.length;j++){
-            let e = g2Enemies[i], b = g2Bullets[j];
-            if (b.x < e.x+e.w &&
-                b.x+b.w > e.x &&
-                b.y < e.y+e.h &&
-                b.y+b.h > e.y){
-                g2Enemies.splice(i,1);
-                g2Bullets.splice(j,1);
-            }
-        }
-    }
-
-    requestAnimationFrame(game2Loop);
-}
-
-/* ============================================================
-   INPUT
-============================================================ */
-
-document.addEventListener("mousemove",(e)=>{
-    if (!g2Running) return;
-    let r = g2Canvas.getBoundingClientRect();
-    g2Player.y = e.clientY - r.top - g2Player.h/2;
-});
-document.addEventListener("touchmove",(e)=>{
-    if (!g2Running) return;
-    let r = g2Canvas.getBoundingClientRect();
-    g2Player.y = e.touches[0].clientY - r.top - g2Player.h/2;
-});
-document.addEventListener("click",()=>{ if(g2Running) shoot2(); });
-document.addEventListener("touchstart",()=>{ if(g2Running) shoot2(); });
-
-/* ============================================================
-   PAYMENT : MetaMask (ETH)
-============================================================ */
-
-document.getElementById("payETH").onclick = async () => {
-    if (typeof window.ethereum === "undefined") {
-        alert("MetaMask not installed");
-        return;
-    }
-    try {
-        await ethereum.request({ method:"eth_requestAccounts" });
-
-        const tx = await ethereum.request({
-            method:"eth_sendTransaction",
-            params:[{
-                from: ethereum.selectedAddress,
-                to: ETH_ADDRESS,
-                value: "0x16345785D8A0000"  // 0.0001 ETH
-            }]
-        });
-
-        alert("ETH Payment complete!");
-        game2Unlocked = true;
-        startGame2();
-    } catch(e){
-        alert("Payment failed");
-    }
-};
-
-/* ============================================================
-   PAYMENT : Sollet (SOL)
-============================================================ */
-
-document.getElementById("paySOL").onclick = () => {
-    window.open(
-        `https://sollet.io/#send?recipient=${SOL_ADDRESS}&amount=0.01`,
-        "_blank"
-    );
-    alert("After sending SOL, press OK to start.");
-    game2Unlocked = true;
-    startGame2();
-};
-
-/* ============================================================
-   CLOSE GAME
-============================================================ */
-function closeGame2(){
-    g2Running = false;
-    document.getElementById("game2Canvas").style.display = "none";
-    document.getElementById("game2Container").style.display = "none";
-}
-
-/* Button */
-document.getElementById("backMenu2").onclick = ()=> closeGame2();
-
-let game1LoopId = null;
-
-function startAgentBird(container) {
-  // Clear vorheriges Spiel
-  container.innerHTML = '';
-  if(game1LoopId) cancelAnimationFrame(game1LoopId);
-
-  // Canvas erstellen
-  const canvas = document.createElement('canvas');
-  canvas.width = 800;
-  canvas.height = 500;
-  canvas.style.backgroundColor = '#87CEEB';
-  container.appendChild(canvas);
-  const ctx = canvas.getContext('2d');
-
-  // Back Button
-  const backBtn = document.createElement('button');
-  backBtn.className = 'backBtn';
-  backBtn.innerText = 'Back';
-  backBtn.onclick = () => { container.innerHTML = ''; cancelAnimationFrame(game1LoopId); game1LoopId = null; };
-  container.appendChild(backBtn);
-
-  // Spieler
-  const player = { x:100, y:250, width:40, height:30, color:'orange', shield:0 };
-  let score = 0;
-  let onGround = false;
-
-  const groundY = canvas.height - 50;
-  const geese = [], bullets = [], planes = [], shots = [], powerups = [], particles = [];
-  let shootCooldown = 0;
-
-  // Steuerung
-  canvas.addEventListener('mousemove', e => { movePlayer(e.clientY); });
-  canvas.addEventListener('touchstart', e => { movePlayer(e.touches[0].clientY); });
-  canvas.addEventListener('touchmove', e => { movePlayer(e.touches[0].clientY); });
-  canvas.addEventListener('click', shoot);
-  canvas.addEventListener('touchend', shoot);
-
-  function movePlayer(y) {
-    const rect = canvas.getBoundingClientRect();
-    player.y = Math.max(0, Math.min(canvas.height - player.height, y - rect.top - player.height/2));
-  }
-
-  function shoot() {
-    if(shootCooldown <= 0){
-      shots.push({x:player.x+player.width, y:player.y+player.height/2-2, width:10, height:4, speed:8});
-      shootCooldown = 20;
-    }
-  }
-
-  function spawnGeese(){ if(Math.random()<0.01){ geese.push({ x:800, y:Math.random()*400, width:50, height:40, color:'gray', cooldown:100 }); } }
-  function spawnPlanes(){ if(Math.random()<0.005){ planes.push({ x:800, y:Math.random()*200+50, width:80, height:40, color:'black', speed:2 }); } }
-  function spawnPowerups(){ if(Math.random()<0.002){ const type = Math.random()<0.5?'shield':'speed'; powerups.push({ x:800, y:Math.random()*400, width:20, height:20, type, speed:2 }); } }
-  function spawnWeather(){
-    if(Math.random()<0.05) particles.push({ x:Math.random()*800, y:0, speed:Math.random()*3+1, type:'snow' });
-    if(Math.random()<0.02) particles.push({ x:Math.random()*800, y:0, speed:Math.random()*5+2, type:'rain' });
-    if(Math.random()<0.001) particles.push({ x:Math.random()*800, y:Math.random()*200, type:'lightning', life:10 });
-  }
-
-  function collide(a,b){
-    return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
-  }
-
-  function update(){
-    if(shootCooldown>0) shootCooldown--;
-
-    if(player.y + player.height >= groundY){
-      player.y = groundY - player.height;
-      onGround = true;
-      score += 0.1;
-    } else onGround = false;
-
-    geese.forEach((g,i)=>{
-      g.x -= 2; g.cooldown--;
-      if(g.cooldown <= 0){ bullets.push({ x:g.x, y:g.y+20, speed:5 }); g.cooldown=100; }
-      if(g.x + g.width < 0) geese.splice(i,1);
-    });
-    bullets.forEach((b,i)=>{
-      b.x -= b.speed;
-      if(collide(player,b)){ if(player.shield>0){player.shield--; bullets.splice(i,1);} else{ alert("Game Over"); backBtn.click(); } }
-      if(b.x<0) bullets.splice(i,1);
-    });
-    planes.forEach((p,i)=>{
-      p.x -= p.speed;
-      if(collide(player,p)){ if(player.shield>0){player.shield--; planes.splice(i,1);} else{ alert("Game Over"); backBtn.click(); } }
-      if(p.x+p.width<0) planes.splice(i,1);
-    });
-
-    shots.forEach((s,i)=>{
-      s.x += s.speed;
-      geese.forEach((g,gi)=>{ if(collide(s,g)){ geese.splice(gi,1); shots.splice(i,1); score+=10; } });
-      planes.forEach((p,pi)=>{ if(collide(s,p)){ planes.splice(pi,1); shots.splice(i,1); score+=20; } });
-      if(s.x>canvas.width) shots.splice(i,1);
-    });
-
-    powerups.forEach((p,i)=>{
-      p.x -= p.speed;
-      if(collide(player,p)){
-        if(p.type==='shield') player.shield+=3;
-        if(p.type==='speed'){ player.speed=8; setTimeout(()=>{player.speed=4;},5000); }
-        powerups.splice(i,1);
-      }
-      if(p.x+p.width<0) powerups.splice(i,1);
-    });
-
-    particles.forEach((p,i)=>{
-      if(p.type==='snow'||p.type==='rain') p.y+=p.speed;
-      if(p.type==='lightning') p.life--;
-      if(p.y>canvas.height||p.life<=0) particles.splice(i,1);
-    });
-
-    spawnGeese(); spawnPlanes(); spawnPowerups(); spawnWeather();
-    score += 0.05;
-  }
-
-  function draw(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    ctx.fillStyle='#87CEEB';
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-    ctx.fillStyle='#228B22';
-    ctx.fillRect(0,groundY,canvas.width,canvas.height-groundY);
-    ctx.fillStyle=player.color;
-    ctx.fillRect(player.x,player.y,player.width,player.height);
-
-    geese.forEach(g=>{ ctx.fillStyle=g.color; ctx.fillRect(g.x,g.y,g.width,g.height); });
-    planes.forEach(p=>{ ctx.fillStyle=p.color; ctx.fillRect(p.x,p.y,p.width,p.height); });
-    bullets.forEach(b=>{ ctx.fillStyle='black'; ctx.fillRect(b.x,b.y,5,5); });
-    shots.forEach(s=>{ ctx.fillStyle='red'; ctx.fillRect(s.x,s.y,s.width,s.height); });
-
-    powerups.forEach(p=>{
-      ctx.fillStyle=p.type==='shield'?'cyan':'yellow';
-      ctx.fillRect(p.x,p.y,p.width,p.height);
-    });
-
-    particles.forEach(p=>{
-      if(p.type==='snow') ctx.fillStyle='white';
-      else if(p.type==='rain') ctx.fillStyle='blue';
-      ctx.fillRect(p.x,p.y,4,4);
-      if(p.type==='lightning'){ ctx.strokeStyle='yellow'; ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(p.x+5,p.y+20); ctx.stroke(); }
-    });
-
-    ctx.fillStyle='black';
-    ctx.font='20px Arial';
-    ctx.fillText('Score: '+Math.floor(score),10,30);
-    ctx.fillText('Shield: '+player.shield,10,60);
-    ctx.fillText(onGround?'On Ground':'In Air',10,90);
-  }
-
-  function gameLoop(){
-    update();
-    draw();
-    game1LoopId = requestAnimationFrame(gameLoop);
-  }
-  gameLoop();
+function closeGame(id) {
+    document.getElementById(id).style.display = 'none';
 }
 </script>
 
