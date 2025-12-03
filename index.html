@@ -1,61 +1,77 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OrangeWeb – Game Portal</title>
-<style>
-  /* === Base Styles === */
-  * {box-sizing:border-box;margin:0;padding:0;}
-  body {font-family:'Segoe UI',sans-serif;background:#0f0f17;color:#fff;display:flex;flex-direction:column;min-height:100vh;}
-  header {background:linear-gradient(90deg,#ff7a00,#ffaa33);padding:20px;font-size:2em;text-align:center;font-weight:bold;box-shadow:0 4px 10px rgba(0,0,0,0.5);}
-  .description {text-align:center;margin:20px;font-size:1.2em;color:#ddd;}
-  
-  /* === Grid Buttons === */
-  .button-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:20px;padding:20px;width:95%;margin:0 auto;}
-  .gameBtn {background:#1a1a2e;border:2px solid #ff7a00;color:#ff7a00;font-size:1.1em;padding:20px;border-radius:12px;cursor:pointer;font-weight:bold;display:flex;flex-direction:column;align-items:center;transition:0.3s;}
-  .gameBtn:hover {background:#ff7a00;color:#000;}
-  .gameBtn small {font-size:0.8em;margin-top:5px;color:#ddd;}
-
-  /* === Game Container === */
-  .game-container {display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:#111;z-index:9999;flex-direction:column;justify-content:center;align-items:center;}
-  canvas {width:95vw;height:70vh;background:#111;border:3px solid #ff7a00;border-radius:12px;}
-  .backBtn {margin-top:15px;padding:12px 25px;background:#ff7a00;border:none;border-radius:10px;font-weight:bold;font-size:1em;cursor:pointer;color:#000;}
-  .backBtn:hover {background:#ffaa33;}
-  .placeholder-text {margin-top:10px;color:#aaa;font-size:0.95em;text-align:center;}
-</style>
-<!-- Solana Web3.js for payment -->
+<script src="https://cdn.jsdelivr.net/npm/web3/dist/web3.min.js"></script>
 <script src="https://unpkg.com/@solana/web3.js@1.73.0/lib/index.iife.js"></script>
-</head>
-<body>
-
-<header>OrangeWeb – Ultimate Game Portal</header>
-
-<div class="description">
-12 exciting games, play directly in your browser. Touch or mouse controls, fully responsive UI.
-</div>
-
-<div class="button-grid">
-  <button class="gameBtn" onclick="openGame('game1')">Game 1<br><small>Agent Bird</small></button>
-  <button class="gameBtn" onclick="openGame('game2')">Game 2<br><small>Cyber Runner (Payment)</small></button>
-  <button class="gameBtn" onclick="openGame('game3')">Game 3<br><small>Coming Soon</small></button>
-  <button class="gameBtn" onclick="openGame('game4')">Game 4<br><small>Coming Soon</small></button>
-</div>
-
-<!-- === Game 1 Container === -->
-<div id="game1" class="game-container">
-  <canvas id="game1Canvas"></canvas>
-  <button class="backBtn" onclick="closeGame('game1')">Back to OrangeWeb</button>
-  <div class="placeholder-text">Agent Bird – Free Play</div>
-</div>
-
-<!-- === Game 2 Container === -->
-<div id="game2" class="game-container">
-  <canvas id="game2Canvas"></canvas>
-  <button class="backBtn" onclick="closeGame('game2')">Back to OrangeWeb</button>
-  <div class="placeholder-text">Cyber Runner – Payment Enabled</div>
-</div>
-
 <script>
-/* === CONFIG === */
+// ===== CONFIG =====
 const CONFIG = {
+  PAYMENT_ENABLED:true,
+  ETH_ADDRESS:"YOUR_ETH_ADDRESS",
+  SOL_ADDRESS:"YOUR_SOL_ADDRESS",
+  PAYMENT_AMOUNT_ETH:0.0001,
+  PAYMENT_AMOUNT_SOL:0.0005 // 0.0005 SOL
+};
+
+// ===== GAME CONTROL =====
+function openGame(id){
+  document.querySelectorAll('.game-container').forEach(c=>c.style.display='none');
+  document.getElementById(id).style.display='flex';
+  if(id==='game1'){startGame1();}
+  if(id==='game2'){startGame2();}
+}
+function closeGame(id){
+  document.getElementById(id).style.display='none';
+}
+
+// ===== ETH PAYMENT =====
+async function payETH(amountETH){
+  if(typeof window.ethereum==='undefined'){alert("MetaMask not installed"); return false;}
+  const web3 = new Web3(window.ethereum);
+  try{
+    await window.ethereum.request({method:'eth_requestAccounts'});
+    const accounts = await web3.eth.getAccounts();
+    await web3.eth.sendTransaction({
+      from: accounts[0],
+      to: CONFIG.ETH_ADDRESS,
+      value: web3.utils.toWei(amountETH.toString(), 'ether')
+    });
+    alert("ETH Payment Successful!");
+    return true;
+  }catch(err){console.error(err); alert("ETH Payment Failed!"); return false;}
+}
+
+// ===== SOL PAYMENT =====
+async function paySOL(amountSOL){
+  if(!window.solana){alert("Solana wallet not found"); return false;}
+  try{
+    await window.solana.connect();
+    const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('mainnet-beta'));
+    const fromPubkey = window.solana.publicKey;
+    const toPubkey = new solanaWeb3.PublicKey(CONFIG.SOL_ADDRESS);
+    const transaction = new solanaWeb3.Transaction().add(
+      solanaWeb3.SystemProgram.transfer({
+        fromPubkey, toPubkey,
+        lamports: amountSOL * solanaWeb3.LAMPORTS_PER_SOL
+      })
+    );
+    const {signature} = await window.solana.signAndSendTransaction(transaction);
+    await connection.confirmTransaction(signature);
+    alert("SOL Payment Successful!");
+    return true;
+  }catch(err){console.error(err); alert("SOL Payment Failed!"); return false;}
+}
+
+// ===== GAME 2 START WITH PAYMENT =====
+async function startGame2(){
+  if(CONFIG.PAYMENT_ENABLED){
+    let choice = confirm("Unlock Game 2?\nETH: "+CONFIG.PAYMENT_AMOUNT_ETH+" ETH\nSOL: "+CONFIG.PAYMENT_AMOUNT_SOL+" SOL");
+    if(choice){
+      let method = prompt("Type 'ETH' or 'SOL' to pay");
+      let success=false;
+      if(method.toUpperCase()==='ETH') success = await payETH(CONFIG.PAYMENT_AMOUNT_ETH);
+      if(method.toUpperCase()==='SOL') success = await paySOL(CONFIG.PAYMENT_AMOUNT_SOL);
+      if(!success) return alert("Payment failed, cannot start Game 2!");
+    }else{return;}
+  }
+  alert("Game 2 unlocked! Start your adventure here.");
+  // TODO: insert Game 2 logic here
+}
+</script>
