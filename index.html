@@ -129,16 +129,32 @@ async function callBackendAPI(endpoint,data){
   console.log("API call:",endpoint,data);
 }
 
+  // Bullet hits enemy
+  for(let i=enemies.length-1;i>=0;i--){
+    for(let j=bullets.length-1;j>=0;j--){
+      let e=enemies[i], b=bullets[j];
+      if(b.x<b.x+e.w && b.x+b.w>e.x && b.y<b.y+e.h && b.y+b.h>e.y){
+        enemies.splice(i,1); bullets.splice(j,1); break;
+      }
+    }
+  }
+
 // ===== GAME 1: AGENT BIRD =====
 const canvas1 = document.getElementById('game1Canvas');
 const ctx1 = canvas1.getContext('2d');
-canvas1.width = canvas1.clientWidth;
-canvas1.height = canvas1.clientHeight;
+
+// Resize canvas to full container
+function resizeCanvas1(){
+  canvas1.width = canvas1.clientWidth;
+  canvas1.height = canvas1.clientHeight;
+}
+resizeCanvas1();
+window.addEventListener('resize', resizeCanvas1);
 
 let game1Running = false;
-let bird = {x:50, y:canvas1.height/2, w:40, h:40, speed:5};
+let bird = {x:50, y:canvas1.height/2, w:40, h:40};
 let bullets = [], enemies = [], lives = 3, lastSpawn = 0;
-let gameZoom = 1.5; // zoomed-out effect
+let gameZoom = 1.5;
 
 // START GAME
 function startGame1(){
@@ -147,7 +163,7 @@ function startGame1(){
   enemies = [];
   lives = 3;
   lastSpawn = 0;
-  gameZoom = 1.5; // zoomed out at start
+  gameZoom = 1.5;
   requestAnimationFrame(loopGame1);
 }
 
@@ -163,8 +179,8 @@ function shoot1(){ bullets.push({x:bird.x+bird.w,y:bird.y+bird.h/2,w:10,h:5,spee
 function loopGame1(t){
   if(!game1Running) return;
   ctx1.save();
-  ctx1.scale(1/gameZoom,1/gameZoom); // zoomed out
-  ctx1.clearRect(0,0,canvas1.width*gameZoom,canvas1.height*gameZoom);
+  ctx1.clearRect(0,0,canvas1.width,canvas1.height);
+  ctx1.scale(1/gameZoom,1/gameZoom);
 
   // Spawn enemies
   if(t-lastSpawn>1000){ spawnEnemy1(); lastSpawn=t; }
@@ -173,20 +189,21 @@ function loopGame1(t){
   ctx1.fillStyle = 'cyan';
   ctx1.fillRect(bird.x,bird.y,bird.w,bird.h);
 
-  // Draw bullets
+  // Move bullets
   bullets = bullets.filter(b=>b.x<canvas1.width*gameZoom);
   bullets.forEach(b=>{b.x+=b.speed; ctx1.fillStyle='lime'; ctx1.fillRect(b.x,b.y,b.w,b.h);});
 
-  // Draw enemies
+  // Move enemies
   enemies = enemies.filter(e=>e.x+e.w>0);
   enemies.forEach(e=>{
     e.x -= e.speed;
     ctx1.fillStyle='red';
     ctx1.fillRect(e.x,e.y,e.w,e.h);
-    // Collision
+
+    // Collision with bird
     if(e.x<bird.x+bird.w && e.x+e.w>bird.x && e.y<bird.y+bird.h && e.y+e.h>bird.y){
       lives--;
-      e.x=-100;
+      e.x=-100; // remove enemy
       if(lives<=0){
         game1Running=false;
         alert("Game Over!");
@@ -213,32 +230,34 @@ function loopGame1(t){
   requestAnimationFrame(loopGame1);
 }
 
-// CONTROLS
-document.addEventListener('mousemove', e=>{
+// TOUCH & MOUSE CONTROLS
+canvas1.addEventListener('mousemove', e=>{
   if(!game1Running) return;
   let r = canvas1.getBoundingClientRect();
   bird.y = e.clientY - r.top - bird.h/2;
 });
-document.addEventListener('touchmove', e=>{
+canvas1.addEventListener('touchmove', e=>{
   if(!game1Running) return;
   let r = canvas1.getBoundingClientRect();
   bird.y = e.touches[0].clientY - r.top - bird.h/2;
 });
-document.addEventListener('click', ()=>{ if(game1Running) shoot1(); });
-document.addEventListener('touchstart', ()=>{ if(game1Running) shoot1(); });
+canvas1.addEventListener('click', ()=>{ if(game1Running) shoot1(); });
+canvas1.addEventListener('touchstart', ()=>{ if(game1Running) shoot1(); });
 
-// OPEN GAME1 FROM BUTTON
+// OPEN / CLOSE GAME1
 function openGame1(){
   document.querySelectorAll('.game-container').forEach(c=>c.style.display='none');
   document.getElementById('game1').style.display='flex';
   startGame1();
 }
-
-// BACK BUTTON HANDLER
 function closeGame1(){
   document.getElementById('game1').style.display='none';
   game1Running=false;
 }
+
+// CONNECT BUTTON
+document.querySelector('.gameBtn[onclick*="game1"]').addEventListener('click', openGame1);
+document.querySelector('#game1 .backBtn').addEventListener('click', closeGame1);
 </script>
 </body>
 </html>
